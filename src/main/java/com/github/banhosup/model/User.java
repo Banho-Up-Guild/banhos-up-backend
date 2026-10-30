@@ -2,8 +2,15 @@ package com.github.banhosup.model;
 
 import java.time.LocalDate;
 import java.util.List;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Size;
+
 
 public class User {
+    @
     private Integer id;
     private String nome;
     private String email;
