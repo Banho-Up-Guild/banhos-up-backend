@@ -13,7 +13,7 @@ public record UserRegisterRequest(
         String name,
 
         @NotBlank(message = "O E-mail é obrigatório.")
-        @Email(message = "Digite um fomato de E-mail válido.")
+        @Email(message = "Digite um formato de E-mail válido.")
         String email,
 
         @NotBlank(message = "A senha é obrigatória")
@@ -22,7 +22,7 @@ public record UserRegisterRequest(
 
         @NotBlank(message = "O telefone é obrigatório")
         @Pattern(
-                regexp = "^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$", // valida o telfone
+                regexp = "^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$", // valida o telefone
                 message = "Formato de telefone inválido"
         )
         String phone,

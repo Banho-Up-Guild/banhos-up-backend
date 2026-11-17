@@ -8,10 +8,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class AppoinmentsService {
+public class AppointmentsService {
     private final AppointmentsRepository appointmentsRepository;
 
-    public AppoinmentsService(AppointmentsRepository appointmentsRepository) {
+    public AppointmentsService(AppointmentsRepository appointmentsRepository) {
     this.appointmentsRepository = appointmentsRepository;
     }
 
