@@ -1,7 +1,7 @@
 package com.github.banhosup.model.entities;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.github.banhosup.model.enums.StatusAppointment;
+import com.github.banhosup.model.enums.StatusAppointments;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
@@ -31,8 +31,14 @@ public class Appointments {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusAppointment status;
+    private StatusAppointments status;
 
     @Column(nullable = false)
     private String observation;
+
+    public Appointments(LocalDateTime dateTimeAppointment, StatusAppointments status, String observation) {
+        this.dateTimeAppointment = dateTimeAppointment;
+        this.status = status;
+        this.observation = observation;
+    }
 }
