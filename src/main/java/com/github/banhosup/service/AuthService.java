@@ -6,6 +6,7 @@ import com.github.banhosup.dto.LoginResponse;
 import com.github.banhosup.dto.UserResponse;
 import com.github.banhosup.model.entities.UserEntity;
 import com.github.banhosup.repository.UserRepository;
+import com.github.banhosup.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;

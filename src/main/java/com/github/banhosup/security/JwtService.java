@@ -1,4 +1,4 @@
-package com.github.banhosup.service;
+package com.github.banhosup.security;
 
 import com.github.banhosup.model.entities.UserEntity;
 import com.nimbusds.jose.JOSEException;
