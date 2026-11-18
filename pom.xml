@@ -63,6 +63,12 @@
 			<version>3.1.0</version>
 		</dependency>
 
+        <!-- Inclui a biblioteca Nimbus JOSE+JWT usada pelo JwtService -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
