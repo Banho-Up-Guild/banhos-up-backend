@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 //que elas sejam propriamente definidas, o correto seria separar para o administrador
 //mas por agora ela ficará geral
 
-public record ServicoDto(
+public record OfferingDto(
         Long id,
 
         @NotBlank(message = "O nome é obrigatorio")
