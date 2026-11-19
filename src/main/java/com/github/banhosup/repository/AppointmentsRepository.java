@@ -1,6 +1,6 @@
 package com.github.banhosup.repository;
 
-import com.github.banhosup.model.entities.Appointments;
+import com.github.banhosup.model.entities.appointments.Appointments;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

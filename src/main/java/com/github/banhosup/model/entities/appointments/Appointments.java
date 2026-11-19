@@ -1,4 +1,4 @@
-package com.github.banhosup.model.entities;
+package com.github.banhosup.model.entities.appointments;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.banhosup.model.enums.StatusAppointments;

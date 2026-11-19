@@ -1,7 +1,7 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.dto.AppointmentsRequestDTO;
-import com.github.banhosup.model.entities.Appointments;
+import com.github.banhosup.model.entities.appointments.Appointments;
 import com.github.banhosup.repository.AppointmentsRepository;
 import org.springframework.stereotype.Service;
 

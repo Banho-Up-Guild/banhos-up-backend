@@ -1,7 +1,7 @@
 package com.github.banhosup.controller;
 
 import com.github.banhosup.dto.AppointmentsRequestDTO;
-import com.github.banhosup.model.entities.Appointments;
+import com.github.banhosup.model.entities.appointments.Appointments;
 import com.github.banhosup.service.AppointmentsService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
