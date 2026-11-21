@@ -1,4 +1,4 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.appointments;
 
 import com.github.banhosup.model.enums.StatusAppointments;
 
