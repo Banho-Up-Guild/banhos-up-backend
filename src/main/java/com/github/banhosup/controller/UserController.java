@@ -1,5 +1,6 @@
 package com.github.banhosup.controller;
 
+import com.github.banhosup.dto.EmployeeRegisterRequest;
 import com.github.banhosup.dto.UserRegisterRequest;
 import com.github.banhosup.dto.UserResponse;
 import com.github.banhosup.service.UserService;
@@ -23,5 +24,10 @@ public class UserController {
     public ResponseEntity<UserResponse> register(@RequestBody @Valid UserRegisterRequest request) {
         UserResponse response = userService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/staff")
+    public ResponseEntity<UserResponse> registerEmployee(@RequestBody @Valid EmployeeRegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerEmployee(request));
     }
 }
