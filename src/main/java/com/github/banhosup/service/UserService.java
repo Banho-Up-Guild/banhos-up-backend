@@ -3,8 +3,10 @@ package com.github.banhosup.service;
 import com.github.banhosup.common.exceptions.BusinessException;
 import com.github.banhosup.dto.UserRegisterRequest;
 import com.github.banhosup.dto.UserResponse;
+import com.github.banhosup.model.entities.CustomerEntity;
 import com.github.banhosup.model.entities.UserEntity;
 import com.github.banhosup.model.enums.Role;
+import com.github.banhosup.repository.CustomerRepository;
 import com.github.banhosup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CustomerRepository customerRepository;
+
 
     @Transactional
     public UserResponse register(UserRegisterRequest request) {
@@ -42,6 +46,7 @@ public class UserService {
         );
 
         UserEntity saved = userRepository.save(user);
+        customerRepository.save(new CustomerEntity(saved));
         return UserResponse.from(saved);
     }
 
