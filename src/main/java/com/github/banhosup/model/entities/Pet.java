@@ -1,7 +1,8 @@
 package com.github.banhosup.model.entities;
 
-import com.github.banhosup.model.entities.UserEntity;
+
 import com.github.banhosup.model.enums.Porte;
+import com.github.banhosup.model.entities.CustomerEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -54,5 +55,6 @@ public class Pet {
     // Dono do pet (um usuário pode ter vários pets)
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "dono_id", nullable = false)
-    private UserEntity dono;
+    private CustomerEntity dono;
+
 }
