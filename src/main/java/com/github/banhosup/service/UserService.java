@@ -42,7 +42,7 @@ public class UserService {
                 passwordEncoder.encode(request.password()),
                 phone,
                 cpf,
-                Role.COSTUMER
+                Role.CUSTOMER
         );
 
         UserEntity saved = userRepository.save(user);
