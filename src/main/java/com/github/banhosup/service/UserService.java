@@ -87,6 +87,12 @@ public class UserService {
         return UserResponse.from(saved);
     }
 
+    public UserResponse findByEmail(String email) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
+        return UserResponse.from(user);
+    }
+
     private String onlyDigits(String value) {
         return value.replaceAll("\\D", "");
     }
