@@ -4,7 +4,6 @@ import com.github.banhosup.dto.EmployeeRegisterRequest;
 import com.github.banhosup.dto.UserRegisterRequest;
 import com.github.banhosup.dto.UserResponse;
 import com.github.banhosup.service.UserService;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,6 @@ public class UserController {
     public ResponseEntity<UserResponse> registerEmployee(@RequestBody @Valid EmployeeRegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.registerEmployee(request));
     }
-    @SecurityRequirement(name = "bearerAuth")
     @GetMapping("/me")
     public UserResponse me(Authentication authentication) {
         return userService.findByEmail(authentication.getName());
