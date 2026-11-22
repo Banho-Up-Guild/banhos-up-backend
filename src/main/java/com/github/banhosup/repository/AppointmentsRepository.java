@@ -15,4 +15,6 @@ public interface AppointmentsRepository extends JpaRepository<Appointments, Long
             LocalDateTime end,
             StatusAppointments status
     );
+
+    boolean existsByDateTimeAppointmentAndStatusNot(LocalDateTime appointment, StatusAppointments status);
 }
