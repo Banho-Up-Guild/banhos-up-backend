@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "lojas")
+@Table(name = "stores")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StoreEntity {
