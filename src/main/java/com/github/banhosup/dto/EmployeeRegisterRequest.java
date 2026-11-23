@@ -1,9 +1,6 @@
 package com.github.banhosup.dto;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 public record EmployeeRegisterRequest(
 
@@ -30,6 +27,9 @@ public record EmployeeRegisterRequest(
         String registry,
 
         @NotBlank(message = "O cargo é obrigatório.")
-        String position
+        String position,
+
+        @NotNull(message = "A loja é obrigatória.")
+                Long storeId
 ) {
 }

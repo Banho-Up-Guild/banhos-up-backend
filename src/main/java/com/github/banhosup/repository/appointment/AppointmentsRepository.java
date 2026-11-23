@@ -1,4 +1,4 @@
-package com.github.banhosup.repository;
+package com.github.banhosup.repository.appointment;
 
 import com.github.banhosup.model.entities.appointments.Appointments;
 import com.github.banhosup.model.enums.StatusAppointments;
