@@ -5,11 +5,13 @@ import com.github.banhosup.dto.appointments.request.AppointmentsRequestCalendary
 import com.github.banhosup.dto.appointments.request.AppointmentsRequestDTO;
 import com.github.banhosup.dto.appointments.request.PetOfferingDTO;
 import com.github.banhosup.dto.appointments.response.AppointmentsResponseCalendaryDTO;
+import com.github.banhosup.model.entities.EmployeeEntity;
 import com.github.banhosup.model.entities.Offering;
 import com.github.banhosup.model.entities.Pet;
 import com.github.banhosup.model.entities.appointments.Appointments;
 import com.github.banhosup.model.entities.appointments.AppointmentsPetOffering;
 import com.github.banhosup.model.enums.StatusAppointments;
+import com.github.banhosup.repository.EmployeeRepository;
 import com.github.banhosup.repository.appointment.AppointmentsPetOfferingRepository;
 import com.github.banhosup.repository.appointment.AppointmentsRepository;
 import com.github.banhosup.repository.OfferingRepository;
@@ -33,12 +35,14 @@ public class AppointmentsService {
     private final PetRepository petRepository;
     private final OfferingRepository offeringRepository;
     private final AppointmentsPetOfferingRepository appointmentsPetOfferingRepository;
+    private final EmployeeRepository employeeRepository;
 
-    public AppointmentsService(AppointmentsRepository appointmentsRepository,  PetRepository petRepository, OfferingRepository offeringRepository, AppointmentsPetOfferingRepository appointmentsPetOfferingRepository) {
+    public AppointmentsService(AppointmentsRepository appointmentsRepository, PetRepository petRepository, OfferingRepository offeringRepository, AppointmentsPetOfferingRepository appointmentsPetOfferingRepository, EmployeeRepository employeeRepository) {
         this.appointmentsRepository = appointmentsRepository;
         this.petRepository = petRepository;
         this.offeringRepository = offeringRepository;
         this.appointmentsPetOfferingRepository = appointmentsPetOfferingRepository;
+        this.employeeRepository = employeeRepository;
     }
 
 
@@ -64,11 +68,15 @@ public class AppointmentsService {
             }
 
         }
+        EmployeeEntity employee = employeeRepository.findById(dto.employeeId())
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
+
         Appointments appointments = new Appointments(
                 dto.dateTimeAppointment(),
                 dto.status(),
                 dto.observation(),
-                totalPrice
+                totalPrice,
+                employee
         );
         appointments = appointmentsRepository.save(appointments);
 

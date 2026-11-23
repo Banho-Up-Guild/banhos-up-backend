@@ -1,6 +1,7 @@
 package com.github.banhosup.model.entities.appointments;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.github.banhosup.model.entities.EmployeeEntity;
 import com.github.banhosup.model.enums.StatusAppointments;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
@@ -41,10 +42,15 @@ public class Appointments {
     @Column(nullable = false)
     private BigDecimal totalPrice;
 
-    public Appointments(LocalDateTime dateTimeAppointment, StatusAppointments status, String observation,  BigDecimal totalPrice) {
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = false)
+    EmployeeEntity employee;
+
+    public Appointments(LocalDateTime dateTimeAppointment, StatusAppointments status, String observation,  BigDecimal totalPrice, EmployeeEntity employee) {
         this.dateTimeAppointment = dateTimeAppointment;
         this.status = status;
         this.observation = observation;
         this.totalPrice = totalPrice;
+        this.employee = employee;
     }
 }

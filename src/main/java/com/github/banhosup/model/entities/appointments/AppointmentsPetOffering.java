@@ -23,7 +23,7 @@ public class AppointmentsPetOffering {
 
     @ManyToOne
     @MapsId("offeringId")
-    @JoinColumn(name = "service_id")
+    @JoinColumn(name = "offering_id")
     private Offering offering;
 
 
