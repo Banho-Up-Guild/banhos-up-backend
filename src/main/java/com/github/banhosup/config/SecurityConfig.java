@@ -4,6 +4,7 @@ import com.github.banhosup.security.JwtFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,9 +27,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/users/staff").hasRole("ADMIN")   // só o admin
-                        .requestMatchers("/users/me").authenticated()       // qualquer pessoa logada
-                        .anyRequest().permitAll()                           // o resto continua aberto
+                        .requestMatchers("/users/staff").hasRole("ADMIN")
+                        .requestMatchers("/users/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/users").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/users/*").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/users/*/active").hasRole("ADMIN")
+                        .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
