@@ -1,4 +1,3 @@
-
 package com.github.banhosup.config;
 
 import com.github.banhosup.security.JwtFilter;
@@ -55,6 +54,15 @@ public class SecurityConfig {
 
                         .requestMatchers("/users/me")
                         .authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/users")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PUT, "/users/*")
+                        .hasRole("ADMIN")
+
+                        .requestMatchers(HttpMethod.PATCH, "/users/*/active")
+                        .hasRole("ADMIN")
 
                         .anyRequest()
                         .permitAll()
