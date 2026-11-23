@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,7 +22,7 @@ import java.time.LocalDateTime;
 public class Appointments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @NotNull(message = "A data e a hora do agendamento são obrigatórios")
     @Future(message = "O agendamento deve ser para uma data futura")
@@ -36,9 +38,13 @@ public class Appointments {
     @Column(nullable = false)
     private String observation;
 
-    public Appointments(LocalDateTime dateTimeAppointment, StatusAppointments status, String observation) {
+    @Column(nullable = false)
+    private BigDecimal totalPrice;
+
+    public Appointments(LocalDateTime dateTimeAppointment, StatusAppointments status, String observation,  BigDecimal totalPrice) {
         this.dateTimeAppointment = dateTimeAppointment;
         this.status = status;
         this.observation = observation;
+        this.totalPrice = totalPrice;
     }
 }

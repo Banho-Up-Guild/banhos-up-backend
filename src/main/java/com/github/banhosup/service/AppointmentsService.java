@@ -3,13 +3,22 @@ package com.github.banhosup.service;
 import com.github.banhosup.common.exceptions.BusinessException;
 import com.github.banhosup.dto.appointments.request.AppointmentsRequestCalendaryDTO;
 import com.github.banhosup.dto.appointments.request.AppointmentsRequestDTO;
+import com.github.banhosup.dto.appointments.request.PetOfferingDTO;
 import com.github.banhosup.dto.appointments.response.AppointmentsResponseCalendaryDTO;
+import com.github.banhosup.model.entities.Offering;
+import com.github.banhosup.model.entities.Pet;
 import com.github.banhosup.model.entities.appointments.Appointments;
+import com.github.banhosup.model.entities.appointments.AppointmentsPetOffering;
 import com.github.banhosup.model.enums.StatusAppointments;
-import com.github.banhosup.repository.AppointmentsRepository;
+import com.github.banhosup.repository.appointment.AppointmentsPetOfferingRepository;
+import com.github.banhosup.repository.appointment.AppointmentsRepository;
+import com.github.banhosup.repository.OfferingRepository;
+import com.github.banhosup.repository.PetRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -21,19 +30,54 @@ import java.util.stream.Collectors;
 @Service
 public class AppointmentsService {
     private final AppointmentsRepository appointmentsRepository;
+    private final PetRepository petRepository;
+    private final OfferingRepository offeringRepository;
+    private final AppointmentsPetOfferingRepository appointmentsPetOfferingRepository;
 
-    public AppointmentsService(AppointmentsRepository appointmentsRepository) {
+    public AppointmentsService(AppointmentsRepository appointmentsRepository,  PetRepository petRepository, OfferingRepository offeringRepository, AppointmentsPetOfferingRepository appointmentsPetOfferingRepository) {
         this.appointmentsRepository = appointmentsRepository;
+        this.petRepository = petRepository;
+        this.offeringRepository = offeringRepository;
+        this.appointmentsPetOfferingRepository = appointmentsPetOfferingRepository;
     }
+
 
     // Post de agendamento
     public Appointments saveAppointment(AppointmentsRequestDTO dto) {
-        Appointments appointment = new Appointments(dto.dateTimeAppointment(), dto.status(), dto.observation());
         if(appointmentsRepository.existsByDateTimeAppointmentAndStatusNot(dto.dateTimeAppointment(), StatusAppointments.CANCELED)) {
             throw new BusinessException(HttpStatus.CONFLICT, "Esse horário já foi agendado por outro usuário");
-        } else {
-            return appointmentsRepository.save(appointment);
         }
+
+        BigDecimal totalPrice = new BigDecimal(0);
+        List<AppointmentsPetOffering> associations = new ArrayList<>();
+
+        for(PetOfferingDTO petOffering : dto.petOffering()) {
+            Pet pet = petRepository.findById(petOffering.petId())
+                    .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Pet não encontrado"));
+            for(Long offeringID : petOffering.offeringIDs()) {
+                Offering offering = offeringRepository.findById(offeringID)
+                        .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Serviço não encontrado"));
+
+                    totalPrice = totalPrice.add(offering.getPreco());
+
+                    associations.add(new AppointmentsPetOffering(null, pet, offering));
+            }
+
+        }
+        Appointments appointments = new Appointments(
+                dto.dateTimeAppointment(),
+                dto.status(),
+                dto.observation(),
+                totalPrice
+        );
+        appointments = appointmentsRepository.save(appointments);
+
+        for(AppointmentsPetOffering aps : associations) {
+            aps.setAppointment(appointments);
+            appointmentsPetOfferingRepository.save(aps);
+        }
+
+        return appointments;
     }
 
     // Get de agendamentos
