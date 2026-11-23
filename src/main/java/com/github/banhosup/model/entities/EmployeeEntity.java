@@ -22,4 +22,8 @@ public class EmployeeEntity {
 
     private String registry;
     private String position;
+
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    private StoreEntity store;
 }
