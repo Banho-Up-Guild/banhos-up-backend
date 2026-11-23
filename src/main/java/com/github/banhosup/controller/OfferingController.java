@@ -25,8 +25,8 @@ public class OfferingController {
 
     private final OfferingService service;
 
-    // GET /Offerings             -> todos
-    // GET /Offerings?ativos=true -> só os ativos (catálogo)
+    // GET /offerings             -> todos
+    // GET offerings?ativos=true -> só os ativos (catálogo)
     @GetMapping
     public List<OfferingDto> listar(@RequestParam(defaultValue = "false") boolean ativos) {
         return service.listar(ativos);

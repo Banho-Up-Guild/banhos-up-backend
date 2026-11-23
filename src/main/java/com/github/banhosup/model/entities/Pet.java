@@ -2,7 +2,6 @@ package com.github.banhosup.model.entities;
 
 
 import com.github.banhosup.model.enums.Porte;
-import com.github.banhosup.model.entities.CustomerEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
