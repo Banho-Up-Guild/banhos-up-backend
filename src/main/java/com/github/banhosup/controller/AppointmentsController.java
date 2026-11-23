@@ -3,6 +3,7 @@ package com.github.banhosup.controller;
 import com.github.banhosup.dto.appointments.request.AppointmentsRequestCalendaryDTO;
 import com.github.banhosup.dto.appointments.request.AppointmentsRequestDTO;
 import com.github.banhosup.dto.appointments.response.AppointmentsResponseCalendaryDTO;
+import com.github.banhosup.dto.appointments.response.AppointmentsResponseDTO;
 import com.github.banhosup.model.entities.appointments.Appointments;
 import com.github.banhosup.service.AppointmentsService;
 import jakarta.validation.Valid;
@@ -22,9 +23,17 @@ public class AppointmentsController {
     }
 
     @PostMapping
-    public ResponseEntity<Appointments> createAppointments(@Valid @RequestBody AppointmentsRequestDTO dto){
+    public ResponseEntity<AppointmentsResponseDTO> createAppointments(@Valid @RequestBody AppointmentsRequestDTO dto){
         Appointments newAppointment = appointmentsService.saveAppointment(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newAppointment);
+        AppointmentsResponseDTO response = new AppointmentsResponseDTO(
+                newAppointment.getDateTimeAppointment(),
+                newAppointment.getStatus(),
+                newAppointment.getObservation(),
+                newAppointment.getTotalPrice(),
+                newAppointment.getEmployee().getId(),
+                newAppointment.getEmployee().getUser().getName()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
