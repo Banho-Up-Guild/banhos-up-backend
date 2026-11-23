@@ -26,7 +26,7 @@ public class Appointments {
     @Future(message = "O agendamento deve ser para uma data futura")
     @DateTimeFormat(pattern = "dd/MM/yyyy HH:mm")
     @JsonFormat(pattern = "dd/MM/yyyy HH:mm")
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private LocalDateTime dateTimeAppointment;
 
     @Enumerated(EnumType.STRING)
