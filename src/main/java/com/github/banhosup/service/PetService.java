@@ -2,10 +2,10 @@ package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
 import com.github.banhosup.dto.pet.PetDto;
+import com.github.banhosup.model.entities.CustomerEntity;
 import com.github.banhosup.model.entities.Pet;
-import com.github.banhosup.model.entities.UserEntity;
+import com.github.banhosup.repository.CustomerRepository;
 import com.github.banhosup.repository.PetRepository;
-import com.github.banhosup.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.util.List;
 public class PetService {
 
     private final PetRepository repository;
-    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
 
     // Id de dono opcional caso apareça necessidade
     @Transactional(readOnly = true)
@@ -57,9 +57,8 @@ public class PetService {
     }
 
     private void preencher(Pet pet, PetDto dto) {
-        UserEntity dono = userRepository.findById(dto.donoId())
+        CustomerEntity dono = customerRepository.findById(dto.donoId())
                 .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Dono não encontrado"));
-
         pet.setNome(dto.nome());
         pet.setEspecie(dto.especie());
         pet.setRaca(dto.raca());

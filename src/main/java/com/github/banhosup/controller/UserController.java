@@ -3,6 +3,7 @@ package com.github.banhosup.controller;
 import com.github.banhosup.dto.employee.EmployeeRegisterRequest;
 import com.github.banhosup.dto.user.UserRegisterRequest;
 import com.github.banhosup.dto.user.UserResponse;
+import com.github.banhosup.dto.UserUpdateRequest;
 import com.github.banhosup.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -31,5 +34,19 @@ public class UserController {
     @GetMapping("/me")
     public UserResponse me(Authentication authentication) {
         return userService.findByEmail(authentication.getName());
+    }
+    @GetMapping
+    public List<UserResponse> findAll() {
+        return userService.findAll();
+    }
+
+    @PutMapping("/{id}")
+    public UserResponse update(@PathVariable Long id, @RequestBody @Valid UserUpdateRequest request) {
+        return userService.update(id, request);
+    }
+
+    @PatchMapping("/{id}/active")
+    public UserResponse setActive(@PathVariable Long id, @RequestParam boolean active) {
+        return userService.setActive(id, active);
     }
 }

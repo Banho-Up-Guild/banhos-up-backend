@@ -8,5 +8,7 @@ import java.time.YearMonth;
 public record AppointmentsRequestCalendaryDTO(
         @NotNull(message = "YearMounth is required")
         @DateTimeFormat(pattern = "yyyy-MM")
-        YearMonth yearMonth
+        YearMonth yearMonth,
+        Long employeeId,
+        Long storeId
 ) {}
