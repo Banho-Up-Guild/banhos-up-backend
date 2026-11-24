@@ -1,7 +1,8 @@
-package com.github.banhosup.model.entities;
+package com.github.banhosup.model.entities.appointments;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.github.banhosup.model.enums.StatusAppointment;
+import com.github.banhosup.model.entities.EmployeeEntity;
+import com.github.banhosup.model.enums.StatusAppointments;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
@@ -10,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,7 +23,7 @@ import java.time.LocalDateTime;
 public class Appointments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @NotNull(message = "A data e a hora do agendamento são obrigatórios")
     @Future(message = "O agendamento deve ser para uma data futura")
@@ -31,8 +34,23 @@ public class Appointments {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusAppointment status;
+    private StatusAppointments status;
 
     @Column(nullable = false)
     private String observation;
+
+    @Column(nullable = false)
+    private BigDecimal totalPrice;
+
+    @ManyToOne
+    @JoinColumn(name = "employee_id", nullable = false)
+    EmployeeEntity employee;
+
+    public Appointments(LocalDateTime dateTimeAppointment, StatusAppointments status, String observation,  BigDecimal totalPrice, EmployeeEntity employee) {
+        this.dateTimeAppointment = dateTimeAppointment;
+        this.status = status;
+        this.observation = observation;
+        this.totalPrice = totalPrice;
+        this.employee = employee;
+    }
 }
