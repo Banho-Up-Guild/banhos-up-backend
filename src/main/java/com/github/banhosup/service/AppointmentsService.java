@@ -97,7 +97,10 @@ public class AppointmentsService {
     public List<AppointmentsResponseCalendaryDTO> appointmentsCalendaryList(AppointmentsRequestCalendaryDTO dto) {
         LocalDateTime start = dto.yearMonth().equals(YearMonth.now()) ? LocalDateTime.now() : dto.yearMonth().atDay(1).atStartOfDay();
         LocalDateTime end = dto.yearMonth().atEndOfMonth().atTime(LocalTime.MAX);
-        List<Appointments> appointments = appointmentsRepository.findByDateTimeAppointmentBetweenAndStatusNot(start, end, StatusAppointments.CANCELED);
+
+        List<Appointments> appointments = dto.employeeId() == 0 ? appointmentsRepository.findAvailableSlotsByStore(dto.storeId(), start, end, StatusAppointments.CANCELED)
+                : appointmentsRepository.findAvailableSlotsByEmployee(dto.employeeId(),start, end, StatusAppointments.CANCELED);
+
         return appointments.stream()
                 .collect(Collectors.groupingBy(
                         app -> app.getDateTimeAppointment().toLocalDate(),
