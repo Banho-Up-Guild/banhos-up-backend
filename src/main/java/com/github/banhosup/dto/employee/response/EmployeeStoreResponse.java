@@ -1,4 +1,7 @@
 package com.github.banhosup.dto.employee.response;
 
-public record EmployeeStoreResponse() {
+public record EmployeeStoreResponse(
+        Long id,
+        String name
+) {
 }
