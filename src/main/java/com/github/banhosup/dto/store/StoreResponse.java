@@ -1,4 +1,4 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.store;
 
 import com.github.banhosup.model.entities.StoreEntity;
 

@@ -1,9 +1,9 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
-import com.github.banhosup.dto.LoginRequest;
-import com.github.banhosup.dto.LoginResponse;
-import com.github.banhosup.dto.UserResponse;
+import com.github.banhosup.dto.login.LoginRequest;
+import com.github.banhosup.dto.login.LoginResponse;
+import com.github.banhosup.dto.user.UserResponse;
 import com.github.banhosup.model.entities.UserEntity;
 import com.github.banhosup.repository.UserRepository;
 import com.github.banhosup.security.JwtService;

@@ -1,4 +1,4 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.user;
 
 import com.github.banhosup.model.entities.UserEntity;
 import com.github.banhosup.model.enums.Role;

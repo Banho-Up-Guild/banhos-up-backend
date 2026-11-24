@@ -1,4 +1,4 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.employee;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

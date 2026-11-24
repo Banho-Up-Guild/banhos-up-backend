@@ -1,6 +1,6 @@
 package com.github.banhosup.controller;
 
-import com.github.banhosup.dto.PetDto;
+import com.github.banhosup.dto.pet.PetDto;
 import com.github.banhosup.service.PetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

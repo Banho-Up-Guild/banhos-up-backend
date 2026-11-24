@@ -1,7 +1,7 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
-import com.github.banhosup.dto.PetDto;
+import com.github.banhosup.dto.pet.PetDto;
 import com.github.banhosup.model.entities.Pet;
 import com.github.banhosup.model.entities.UserEntity;
 import com.github.banhosup.repository.PetRepository;

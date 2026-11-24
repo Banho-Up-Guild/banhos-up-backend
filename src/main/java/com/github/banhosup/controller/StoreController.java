@@ -1,7 +1,7 @@
 package com.github.banhosup.controller;
 
-import com.github.banhosup.dto.StoreRequest;
-import com.github.banhosup.dto.StoreResponse;
+import com.github.banhosup.dto.store.StoreRequest;
+import com.github.banhosup.dto.store.StoreResponse;
 import com.github.banhosup.service.StoreService;
 
 import jakarta.validation.Valid;

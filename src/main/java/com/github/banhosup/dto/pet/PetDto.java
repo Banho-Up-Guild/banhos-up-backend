@@ -1,4 +1,4 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.pet;
 
 import com.github.banhosup.model.enums.Porte;
 import jakarta.validation.constraints.NotBlank;

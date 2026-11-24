@@ -1,8 +1,8 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
-import com.github.banhosup.dto.StoreRequest;
-import com.github.banhosup.dto.StoreResponse;
+import com.github.banhosup.dto.store.StoreRequest;
+import com.github.banhosup.dto.store.StoreResponse;
 import com.github.banhosup.model.entities.StoreEntity;
 import com.github.banhosup.repository.StoreRepository;
 

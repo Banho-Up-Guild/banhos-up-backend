@@ -1,4 +1,6 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.login;
+
+import com.github.banhosup.dto.user.UserResponse;
 
 public record LoginResponse(
         String token,

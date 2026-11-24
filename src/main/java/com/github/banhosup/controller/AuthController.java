@@ -1,7 +1,7 @@
 package com.github.banhosup.controller;
 
-import com.github.banhosup.dto.LoginRequest;
-import com.github.banhosup.dto.LoginResponse;
+import com.github.banhosup.dto.login.LoginRequest;
+import com.github.banhosup.dto.login.LoginResponse;
 import com.github.banhosup.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

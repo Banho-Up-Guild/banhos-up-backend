@@ -1,8 +1,8 @@
 package com.github.banhosup.controller;
 
-import com.github.banhosup.dto.EmployeeRegisterRequest;
-import com.github.banhosup.dto.UserRegisterRequest;
-import com.github.banhosup.dto.UserResponse;
+import com.github.banhosup.dto.employee.EmployeeRegisterRequest;
+import com.github.banhosup.dto.user.UserRegisterRequest;
+import com.github.banhosup.dto.user.UserResponse;
 import com.github.banhosup.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

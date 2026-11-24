@@ -1,9 +1,9 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
-import com.github.banhosup.dto.EmployeeRegisterRequest;
-import com.github.banhosup.dto.UserRegisterRequest;
-import com.github.banhosup.dto.UserResponse;
+import com.github.banhosup.dto.employee.EmployeeRegisterRequest;
+import com.github.banhosup.dto.user.UserRegisterRequest;
+import com.github.banhosup.dto.user.UserResponse;
 import com.github.banhosup.model.entities.CustomerEntity;
 import com.github.banhosup.model.entities.EmployeeEntity;
 import com.github.banhosup.model.entities.UserEntity;
