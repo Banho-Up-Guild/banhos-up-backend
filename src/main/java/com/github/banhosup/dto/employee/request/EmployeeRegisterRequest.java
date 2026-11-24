@@ -1,4 +1,4 @@
-package com.github.banhosup.dto.employee;
+package com.github.banhosup.dto.employee.request;
 
 import jakarta.validation.constraints.*;
 
