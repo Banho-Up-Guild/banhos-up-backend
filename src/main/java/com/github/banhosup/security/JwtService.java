@@ -7,7 +7,13 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -18,57 +24,31 @@ import java.util.Date;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private final JwtEncoder jwtEncoder;
 
     @Value("${jwt.expiration-seconds:3600}")
     private long expirationSeconds;
 
-    // Monta as claims (os dados do token) e delega a assinatura para jwtEncode()
     public String generateToken(UserEntity user) {
-        // Ex.: ["ROLE_CUSTOMER"]
-        List<String> roles = List.of("ROLE_" + user.getRole().name());
-
         Instant now = Instant.now();
-        Instant expiration = now.plusSeconds(expirationSeconds);
 
-        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+        JwtClaimsSet claims = JwtClaimsSet.builder()
                 .subject(user.getEmail())
                 .issuer("banho-up-api")
-                .issueTime(Date.from(now))
-                .expirationTime(Date.from(expiration))
-                .claim("roles", roles)
+                .issuedAt(now)
+                .expiresAt(now.plusSeconds(expirationSeconds))
+                .claim("roles", List.of("ROLE_" + user.getRole().name()))
                 .build();
 
-        return jwtEncode(claims);
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+
+        return jwtEncoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();
     }
 
-    // Validade em milissegundos, para o LoginResponse
     public long getExpirationMs() {
         return expirationSeconds * 1000;
-    }
-
-    // Assina as claims e devolve o texto "header.payload.signature"
-    private String jwtEncode(JWTClaimsSet claims) {
-        try {
-            // 1. Transforma o segredo (qualquer tamanho) numa chave de 256 bits com SHA-256
-            byte[] keyBytes = MessageDigest.getInstance("SHA-256")
-                    .digest(jwtSecret.getBytes(StandardCharsets.UTF_8));
-            MACSigner signer = new MACSigner(keyBytes);
-
-            // 2. Junta o cabeçalho (algoritmo HS256) com o conteúdo (claims)
-            SignedJWT jwt = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claims);
-
-            // 3. Assina com a chave
-            jwt.sign(signer);
-
-            // 4. Converte para o texto final
-            return jwt.serialize();
-
-        } catch (JOSEException | NoSuchAlgorithmException e) {
-            throw new RuntimeException("Erro ao assinar o token JWT", e);
-        }
     }
 }
