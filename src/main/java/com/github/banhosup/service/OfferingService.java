@@ -50,7 +50,13 @@ public class OfferingService {
 
     @Transactional
     public void deletar(Long id) {
-        repository.delete(buscarEntidade(id));
+
+        Offering offering = buscarEntidade(id);
+
+        // Desativa o serviço sem remover seu histórico.
+        offering.setAtivo(false);
+
+        repository.save(offering);
     }
 
     private Offering buscarEntidade(Long id) {

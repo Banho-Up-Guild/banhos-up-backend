@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface AppointmentsRepository extends JpaRepository<Appointments, Long> {
@@ -16,5 +17,20 @@ public interface AppointmentsRepository extends JpaRepository<Appointments, Long
             StatusAppointments status
     );
 
+    List<Appointments>
+    findByEmployee_Store_IdOrderByDateTimeAppointmentAsc(Long storeId);
+
+    Optional<Appointments> findByIdAndEmployee_Store_Id(
+            Long appointmentId,
+            Long storeId
+    );
+
     boolean existsByDateTimeAppointmentAndStatusNot(LocalDateTime appointment, StatusAppointments status);
+
+    List<Appointments> findByEmployee_IdInAndDateTimeAppointmentBetweenAndStatusNot(
+            List<Long> employeeIds,
+            LocalDateTime start,
+            LocalDateTime end,
+            StatusAppointments status
+    );
 }
