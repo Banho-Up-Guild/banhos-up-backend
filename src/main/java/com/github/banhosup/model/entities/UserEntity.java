@@ -26,10 +26,9 @@ public class UserEntity {
     private String name;
 
     @Setter
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 120)
     private String email;
 
-    @Setter
     @Column(nullable = false)
     private String password;
 
@@ -41,7 +40,6 @@ public class UserEntity {
     @Column(nullable = false, unique = true, length = 11)
     private String cpf;
 
-    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
@@ -53,11 +51,11 @@ public class UserEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime registeredAt;
 
-    @Column(nullable = false)
+    @Column
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(name = "birth_date", nullable = false)
+    @Column
     private LocalDate birthDate;
 
     public UserEntity(String name, String email, String password, String phone, String cpf, Role role, Gender gender, LocalDate birthDate) {

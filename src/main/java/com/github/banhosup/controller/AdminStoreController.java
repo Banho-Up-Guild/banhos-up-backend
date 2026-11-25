@@ -1,6 +1,6 @@
 package com.github.banhosup.controller;
 
-import com.github.banhosup.dto.StoreResponse;
+import com.github.banhosup.dto.store.*;
 import com.github.banhosup.service.StoreService;
 
 import lombok.RequiredArgsConstructor;

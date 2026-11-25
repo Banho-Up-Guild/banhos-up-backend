@@ -40,6 +40,10 @@ public class UserService {
         String cpf = onlyDigits(request.cpf());
         String phone = onlyDigits(request.phone());
 
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new BusinessException(HttpStatus.BAD_REQUEST, "As senhas não conferem.");
+        }
+
         if (userRepository.existsByEmail(email)) {
             throw new BusinessException(HttpStatus.CONFLICT, "E-mail já cadastrado.");
         }
@@ -142,7 +146,7 @@ public class UserService {
     }
 
     public List<EmployeeEntity> findEmployeeStore(EmployeeStoreRequest dto){
-        return employeeRepository.findByStoreId(dto.idStore());
+        return employeeRepository.findByStore_Id(dto.idStore());
     }
 
     private String onlyDigits(String value) {

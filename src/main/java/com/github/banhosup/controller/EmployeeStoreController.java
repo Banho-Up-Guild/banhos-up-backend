@@ -1,7 +1,7 @@
 package com.github.banhosup.controller;
 
 import com.github.banhosup.common.exceptions.BusinessException;
-import com.github.banhosup.dto.StoreResponse;
+import com.github.banhosup.dto.store.StoreResponse;
 import com.github.banhosup.model.entities.EmployeeEntity;
 import com.github.banhosup.repository.EmployeeRepository;
 

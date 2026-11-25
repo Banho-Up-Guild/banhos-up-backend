@@ -20,6 +20,9 @@ public record UserRegisterRequest(
         @Size(min = 8, max = 72, message = "A senha deve ter entre 8 e 72 caracteres")
         String password,
 
+        @NotBlank(message = "A confirmação da senha é obrigatória.")
+        String confirmPassword,
+
         @NotBlank(message = "O telefone é obrigatório")
         @Pattern(
                 regexp = "^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$", // valida o telefone
