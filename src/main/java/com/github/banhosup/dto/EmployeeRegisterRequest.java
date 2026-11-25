@@ -1,6 +1,10 @@
 package com.github.banhosup.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.github.banhosup.model.enums.Gender;
 import jakarta.validation.constraints.*;
+
+import java.time.LocalDate;
 
 public record EmployeeRegisterRequest(
 
@@ -30,6 +34,14 @@ public record EmployeeRegisterRequest(
         String position,
 
         @NotNull(message = "A loja é obrigatória.")
-                Long storeId
+        Long storeId,
+
+        @NotNull(message = "O Gênero é obrigatório")
+        Gender gender,
+
+        @NotNull(message = "A data de nascimento é obrigatória")
+        @Past(message = "A data de nascimento deve estar no passado")
+        @JsonFormat(pattern = "dd/MM/yyyy")
+        LocalDate birthDate
 ) {
 }

@@ -1,5 +1,6 @@
 package com.github.banhosup.model.entities;
 
+import com.github.banhosup.model.enums.Gender;
 import com.github.banhosup.model.enums.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -51,13 +53,22 @@ public class UserEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime registeredAt;
 
-    public UserEntity(String name, String email, String password, String phone, String cpf, Role role) {
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+    @Column(name = "birth_date", nullable = false)
+    private LocalDate birthDate;
+
+    public UserEntity(String name, String email, String password, String phone, String cpf, Role role, Gender gender, LocalDate birthDate) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.phone = phone;
         this.cpf = cpf;
         this.role = role;
+        this.gender = gender;
+        this.birthDate = birthDate;
     }
 
     @PrePersist

@@ -52,7 +52,9 @@ public class UserService {
                 passwordEncoder.encode(request.password()),
                 phone,
                 cpf,
-                Role.CUSTOMER
+                Role.CUSTOMER,
+                request.gender(),
+                request.birthDate()
         );
 
         UserEntity saved = userRepository.save(user);
@@ -86,7 +88,9 @@ public class UserService {
                 passwordEncoder.encode(request.password()),
                 phone,
                 cpf,
-                Role.EMPLOYEE
+                Role.EMPLOYEE,
+                request.gender(),
+                request.birthDate()
         );
 
         UserEntity saved = userRepository.save(user);
