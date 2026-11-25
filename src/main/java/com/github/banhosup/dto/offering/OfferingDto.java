@@ -1,4 +1,4 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.offering;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;

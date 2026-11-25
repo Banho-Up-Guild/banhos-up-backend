@@ -1,7 +1,7 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
-import com.github.banhosup.dto.PetDto;
+import com.github.banhosup.dto.pet.PetDto;
 import com.github.banhosup.model.entities.CustomerEntity;
 import com.github.banhosup.model.entities.Pet;
 import com.github.banhosup.repository.CustomerRepository;
@@ -20,7 +20,7 @@ public class PetService {
     private final PetRepository repository;
     private final CustomerRepository customerRepository;
 
-    // Id de dono opcional caso apareça necessidade
+    // ID de dono opcional caso apareça necessidade
     @Transactional(readOnly = true)
     public List<PetDto> listar(Long donoId) {
         List<Pet> pets = (donoId == null) ? repository.findAll() : repository.findByDonoId(donoId);

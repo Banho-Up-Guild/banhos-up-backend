@@ -1,4 +1,4 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.user;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.github.banhosup.model.enums.Gender;

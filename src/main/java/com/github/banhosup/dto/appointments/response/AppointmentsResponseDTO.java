@@ -1,6 +1,5 @@
 package com.github.banhosup.dto.appointments.response;
 
-import com.github.banhosup.model.entities.EmployeeEntity;
 import com.github.banhosup.model.enums.StatusAppointments;
 
 import java.math.BigDecimal;

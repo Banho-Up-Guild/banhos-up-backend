@@ -1,4 +1,4 @@
-package com.github.banhosup.dto;
+package com.github.banhosup.dto.store;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;

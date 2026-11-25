@@ -1,9 +1,10 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
-import com.github.banhosup.dto.EmployeeRegisterRequest;
-import com.github.banhosup.dto.UserRegisterRequest;
-import com.github.banhosup.dto.UserResponse;
+import com.github.banhosup.dto.employee.request.EmployeeRegisterRequest;
+import com.github.banhosup.dto.employee.request.EmployeeStoreRequest;
+import com.github.banhosup.dto.user.UserRegisterRequest;
+import com.github.banhosup.dto.user.UserResponse;
 import com.github.banhosup.dto.UserUpdateRequest;
 import com.github.banhosup.model.entities.CustomerEntity;
 import com.github.banhosup.model.entities.EmployeeEntity;
@@ -138,6 +139,10 @@ public class UserService {
     private UserEntity findById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
+    }
+
+    public List<EmployeeEntity> findEmployeeStore(EmployeeStoreRequest dto){
+        return employeeRepository.findByStoreId(dto.idStore());
     }
 
     private String onlyDigits(String value) {

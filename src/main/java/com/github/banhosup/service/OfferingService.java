@@ -1,7 +1,7 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
-import com.github.banhosup.dto.OfferingDto;
+import com.github.banhosup.dto.offering.OfferingDto;
 import com.github.banhosup.model.entities.Offering;
 import com.github.banhosup.repository.OfferingRepository;
 import lombok.RequiredArgsConstructor;

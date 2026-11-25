@@ -1,6 +1,6 @@
 package com.github.banhosup.controller;
 
-import com.github.banhosup.dto.OfferingDto;
+import com.github.banhosup.dto.offering.OfferingDto;
 import com.github.banhosup.service.OfferingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
