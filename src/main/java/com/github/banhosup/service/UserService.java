@@ -1,6 +1,7 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
+import com.github.banhosup.dto.ChangePasswordRequest;
 import com.github.banhosup.dto.EmployeeRegisterRequest;
 import com.github.banhosup.dto.UserRegisterRequest;
 import com.github.banhosup.dto.UserResponse;
@@ -70,6 +71,7 @@ public class UserService {
 
         return UserResponse.from(saved);
     }
+
     @Transactional
     public UserResponse registerEmployee(EmployeeRegisterRequest request) {
         String email = request.email().trim().toLowerCase();
@@ -151,7 +153,6 @@ public class UserService {
         return CustomerProfileResponse.from(user, customer);
     }
 
-
     @Transactional
     public CustomerProfileResponse updateMyCustomerProfile(
             String email,
@@ -194,6 +195,42 @@ public class UserService {
         return CustomerProfileResponse.from(user, customer);
     }
 
+    @Transactional
+    public void changeMyCustomerPassword(
+            String email,
+            ChangePasswordRequest request
+    ) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuário não encontrado."
+                ));
+
+        if (user.getRole() != Role.CUSTOMER || !user.isActive()) {
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Esta operação está disponível somente para clientes ativos."
+            );
+        }
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "A senha atual informada está incorreta."
+            );
+        }
+
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "A nova senha deve ser diferente da senha atual."
+            );
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
+
     public List<UserResponse> findAll() {
         List<UserResponse> users = new ArrayList<>();
 
@@ -203,6 +240,7 @@ public class UserService {
 
         return users;
     }
+
     @Transactional
     public UserResponse update(Long id, UserUpdateRequest request) {
         UserEntity user = findById(id);
@@ -245,4 +283,3 @@ public class UserService {
         return value.trim();
     }
 }
-

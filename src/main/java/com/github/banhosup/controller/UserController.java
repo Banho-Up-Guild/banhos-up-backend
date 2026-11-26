@@ -1,5 +1,6 @@
 package com.github.banhosup.controller;
 
+import com.github.banhosup.dto.ChangePasswordRequest;
 import com.github.banhosup.dto.EmployeeRegisterRequest;
 import com.github.banhosup.dto.UserRegisterRequest;
 import com.github.banhosup.dto.UserResponse;
@@ -58,6 +59,15 @@ public class UserController {
                 authentication.getName(),
                 request
         );
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<Void> changeMyPassword(
+            @RequestBody @Valid ChangePasswordRequest request,
+            Authentication authentication
+    ) {
+        userService.changeMyCustomerPassword(authentication.getName(), request);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")

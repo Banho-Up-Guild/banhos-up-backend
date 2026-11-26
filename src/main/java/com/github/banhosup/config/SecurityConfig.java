@@ -85,6 +85,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/users/me/profile")
                         .hasRole("CUSTOMER")
 
+                        .requestMatchers(HttpMethod.PUT, "/users/me/password")
+                        .hasRole("CUSTOMER")
+
                         .requestMatchers(HttpMethod.GET, "/users")
                         .hasRole("ADMIN")
 
@@ -167,20 +170,20 @@ public class SecurityConfig {
                         .requestMatchers("/employee/**")
                         .hasRole("EMPLOYEE")
 
-                                // CONSULTAS PÚBLICAS NECESSÁRIAS AO FLUXO DE AGENDAMENTO.
-                                .requestMatchers(HttpMethod.GET, "/users/store_employee")
-                                .permitAll()
+                        // CONSULTAS PÚBLICAS NECESSÁRIAS AO FLUXO DE AGENDAMENTO.
+                        .requestMatchers(HttpMethod.GET, "/users/store_employee")
+                        .permitAll()
 
-                                .requestMatchers(HttpMethod.GET, "/availability/calendar")
-                                .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/availability/calendar")
+                        .permitAll()
 
-                                // DOCUMENTAÇÃO DA API.
-                                .requestMatchers(
-                                        "/swagger-ui.html",
-                                        "/swagger-ui/**",
-                                        "/v3/api-docs/**"
-                                )
-                                .permitAll()
+                        // DOCUMENTAÇÃO DA API.
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        )
+                        .permitAll()
 
                         // HISTÓRICO DO CLIENTE
                         .requestMatchers("/customer/**")
