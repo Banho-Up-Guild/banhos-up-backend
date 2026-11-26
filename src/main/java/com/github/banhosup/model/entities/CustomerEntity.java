@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "customers")
@@ -22,6 +23,14 @@ public class CustomerEntity {
 
     @Setter
     private String address;
+
+    @Setter
+    @Column(length = 30)
+    private String gender;
+
+    @Setter
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
 
     public CustomerEntity(UserEntity user) {
         this.user = user;

@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
+import com.github.banhosup.model.entities.StoreEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -45,6 +46,10 @@ public class Appointments {
     @ManyToOne
     @JoinColumn(name = "employee_id", nullable = false)
     EmployeeEntity employee;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private StoreEntity store;
 
     public Appointments(LocalDateTime dateTimeAppointment, StatusAppointments status, String observation,  BigDecimal totalPrice, EmployeeEntity employee) {
         this.dateTimeAppointment = dateTimeAppointment;

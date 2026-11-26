@@ -8,7 +8,12 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.validation.constraints.Future;
+import jakarta.validation.constraints.NotNull;
+
 public record AppointmentsRequestDTO(
+        @NotNull(message = "A data e o horário são obrigatórios.")
+        @Future(message = "O agendamento precisa ser em uma data futura.")
         LocalDateTime dateTimeAppointment,
         StatusAppointments status,
         String observation,

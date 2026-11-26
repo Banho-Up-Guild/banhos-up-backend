@@ -11,4 +11,5 @@ public interface AppointmentsPetOfferingRepository extends JpaRepository<Appoint
     List<AppointmentsPetOffering> findByAppointments_Id(
             Long appointmentId
     );
+    boolean existsByPet_Id(Long petId);
 }

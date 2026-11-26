@@ -25,6 +25,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import jakarta.servlet.DispatcherType;
 
 @EnableMethodSecurity
 @Configuration
@@ -51,9 +52,18 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
+                        // Permite encaminhamentos internos de erros do Spring.
+                        // Não libera o acesso direto às rotas protegidas.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR)
+                        .permitAll()
+
                         // Permite requisições de preflight do navegador.
                         .requestMatchers(HttpMethod.OPTIONS, "/**")
                         .permitAll()
+
+                        // CLIENTES: gerenciamento dos próprios pets.
+                        .requestMatchers("/pets/**")
+                        .hasRole("CUSTOMER")
 
                         // LOGIN E CADASTRO DE CLIENTES
                         .requestMatchers(HttpMethod.POST, "/auth/login")
@@ -68,6 +78,15 @@ public class SecurityConfig {
 
                         .requestMatchers(HttpMethod.GET, "/users/me")
                         .authenticated()
+
+                        .requestMatchers(HttpMethod.GET, "/users/me/profile")
+                        .hasRole("CUSTOMER")
+
+                        .requestMatchers(HttpMethod.PUT, "/users/me/profile")
+                        .hasRole("CUSTOMER")
+
+                        .requestMatchers(HttpMethod.PUT, "/users/me/password")
+                        .hasRole("CUSTOMER")
 
                         .requestMatchers(HttpMethod.GET, "/users")
                         .hasRole("ADMIN")
@@ -132,7 +151,7 @@ public class SecurityConfig {
 
                         // AGENDAMENTO PÚBLICO DOS CLIENTES
                         .requestMatchers(HttpMethod.POST, "/appointments")
-                        .permitAll()
+                        .hasRole("CUSTOMER")
 
                         .requestMatchers(HttpMethod.GET, "/appointments/calendar")
                         .permitAll()
@@ -151,11 +170,28 @@ public class SecurityConfig {
                         .requestMatchers("/employee/**")
                         .hasRole("EMPLOYEE")
 
-                        // Mantemos as demais rotas existentes como estavam.
-                        // Elas serão auditadas e protegidas por funcionalidade
-                        // para não interromper o trabalho dos outros integrantes.
-                        .anyRequest()
+                        // CONSULTAS PÚBLICAS NECESSÁRIAS AO FLUXO DE AGENDAMENTO.
+                        .requestMatchers(HttpMethod.GET, "/users/store_employee")
                         .permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/availability/calendar")
+                        .permitAll()
+
+                        // DOCUMENTAÇÃO DA API.
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
+                        )
+                        .permitAll()
+
+                        // HISTÓRICO DO CLIENTE
+                        .requestMatchers("/customer/**")
+                        .hasRole("CUSTOMER")
+
+                        // Qualquer rota nova precisa receber uma regra de acesso explícita.
+                        .anyRequest()
+                        .denyAll()
 
                 )
 

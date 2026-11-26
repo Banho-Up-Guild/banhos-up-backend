@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.security.core.Authentication;
 
 @RestController
 @RequestMapping("/appointments")
@@ -23,8 +24,12 @@ public class AppointmentsController {
     }
 
     @PostMapping
-    public ResponseEntity<AppointmentsResponseDTO> createAppointments(@Valid @RequestBody AppointmentsRequestDTO dto){
-        Appointments newAppointment = appointmentsService.saveAppointment(dto);
+    public ResponseEntity<AppointmentsResponseDTO> createAppointments(
+            @Valid @RequestBody AppointmentsRequestDTO dto,
+            Authentication authentication
+    ) {
+        Appointments newAppointment =
+                appointmentsService.saveAppointment(dto, authentication);
         AppointmentsResponseDTO response = new AppointmentsResponseDTO(
                 newAppointment.getDateTimeAppointment(),
                 newAppointment.getStatus(),

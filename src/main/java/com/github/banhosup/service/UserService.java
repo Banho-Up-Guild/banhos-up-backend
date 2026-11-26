@@ -1,6 +1,7 @@
 package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
+import com.github.banhosup.dto.ChangePasswordRequest;
 import com.github.banhosup.dto.EmployeeRegisterRequest;
 import com.github.banhosup.dto.UserRegisterRequest;
 import com.github.banhosup.dto.UserResponse;
@@ -19,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.github.banhosup.dto.CustomerProfileResponse;
+import com.github.banhosup.dto.CustomerProfileUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,10 +58,20 @@ public class UserService {
                 Role.CUSTOMER
         );
 
+        user.setSecondaryPhone(normalizeOptionalPhone(request.secondaryPhone()));
+
         UserEntity saved = userRepository.save(user);
-        customerRepository.save(new CustomerEntity(saved));
+
+        CustomerEntity customer = new CustomerEntity(saved);
+
+        customer.setGender(normalizeOptionalText(request.gender()));
+        customer.setDateOfBirth(request.dateOfBirth());
+
+        customerRepository.save(customer);
+
         return UserResponse.from(saved);
     }
+
     @Transactional
     public UserResponse registerEmployee(EmployeeRegisterRequest request) {
         String email = request.email().trim().toLowerCase();
@@ -79,6 +92,13 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(
                         HttpStatus.NOT_FOUND, "Loja não encontrada."
                 ));
+
+        if (!store.isAtiva()) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "Não é possível cadastrar funcionários em uma unidade inativa."
+            );
+        }
 
         UserEntity user = new UserEntity(
                 request.name().trim(),
@@ -107,6 +127,110 @@ public class UserService {
         return UserResponse.from(user);
     }
 
+    @Transactional(readOnly = true)
+    public CustomerProfileResponse findMyCustomerProfile(String email) {
+
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuário não encontrado."
+                ));
+
+        if (user.getRole() != Role.CUSTOMER) {
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Esta operação é exclusiva para clientes."
+            );
+        }
+
+        CustomerEntity customer = customerRepository
+                .findByUser_Email(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Perfil do cliente não encontrado."
+                ));
+
+        return CustomerProfileResponse.from(user, customer);
+    }
+
+    @Transactional
+    public CustomerProfileResponse updateMyCustomerProfile(
+            String email,
+            CustomerProfileUpdateRequest request
+    ) {
+
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuário não encontrado."
+                ));
+
+        if (user.getRole() != Role.CUSTOMER || !user.isActive()) {
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Esta operação não está disponível para esta conta."
+            );
+        }
+
+        CustomerEntity customer = customerRepository
+                .findByUser_Email(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Perfil do cliente não encontrado."
+                ));
+
+        user.setName(request.name().trim());
+        user.setPhone(onlyDigits(request.phone()));
+        user.setSecondaryPhone(
+                normalizeOptionalPhone(request.secondaryPhone())
+        );
+
+        customer.setGender(normalizeOptionalText(request.gender()));
+        customer.setDateOfBirth(request.dateOfBirth());
+        customer.setAddress(normalizeOptionalText(request.address()));
+
+        userRepository.save(user);
+        customerRepository.save(customer);
+
+        return CustomerProfileResponse.from(user, customer);
+    }
+
+    @Transactional
+    public void changeMyCustomerPassword(
+            String email,
+            ChangePasswordRequest request
+    ) {
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuário não encontrado."
+                ));
+
+        if (user.getRole() != Role.CUSTOMER || !user.isActive()) {
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Esta operação está disponível somente para clientes ativos."
+            );
+        }
+
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "A senha atual informada está incorreta."
+            );
+        }
+
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "A nova senha deve ser diferente da senha atual."
+            );
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
+
     public List<UserResponse> findAll() {
         List<UserResponse> users = new ArrayList<>();
 
@@ -116,6 +240,7 @@ public class UserService {
 
         return users;
     }
+
     @Transactional
     public UserResponse update(Long id, UserUpdateRequest request) {
         UserEntity user = findById(id);
@@ -139,5 +264,22 @@ public class UserService {
     private String onlyDigits(String value) {
         return value.replaceAll("\\D", "");
     }
-}
 
+    private String normalizeOptionalPhone(String value) {
+
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return onlyDigits(value);
+    }
+
+    private String normalizeOptionalText(String value) {
+
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value.trim();
+    }
+}

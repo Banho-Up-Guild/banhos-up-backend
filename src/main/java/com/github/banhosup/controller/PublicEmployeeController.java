@@ -24,7 +24,7 @@ public class PublicEmployeeController {
 
         List<ProfessionalResponse> profissionais =
                 employeeRepository
-                        .findByStore_IdAndUser_ActiveTrueOrderByUser_NameAsc(idStore)
+                        .findByStore_IdAndTeamActiveTrueAndUser_ActiveTrueOrderByUser_NameAsc(idStore)
                         .stream()
                         .map(employee -> new ProfessionalResponse(
                                 employee.getId(),

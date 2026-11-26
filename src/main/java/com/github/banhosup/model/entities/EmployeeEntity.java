@@ -26,4 +26,7 @@ public class EmployeeEntity {
     @ManyToOne
     @JoinColumn(name = "store_id")
     private StoreEntity store;
+
+    @Column(name = "team_active", nullable = false)
+    private boolean teamActive = true;
 }
