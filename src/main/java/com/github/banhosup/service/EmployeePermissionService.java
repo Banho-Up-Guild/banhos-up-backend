@@ -68,6 +68,17 @@ public class EmployeePermissionService {
             return false;
         }
 
+        EmployeeEntity employee = employeeRepository
+                .findByUser_Email(email)
+                .orElse(null);
+
+        if (employee == null
+                || !employee.getUser().isActive()
+                || !employee.isTeamActive()
+                || employee.getStore() == null) {
+            return false;
+        }
+
         EmployeePermission permission;
 
         try {
@@ -151,6 +162,16 @@ public class EmployeePermissionService {
                         HttpStatus.NOT_FOUND,
                         "Registro de funcionário não encontrado."
                 ));
+
+        if (!employee.getUser().isActive() ||
+                !employee.isTeamActive() ||
+                employee.getStore() == null) {
+
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Funcionário sem vínculo ativo com uma unidade."
+            );
+        }
 
         return buscarPermissoes(employee.getId());
     }

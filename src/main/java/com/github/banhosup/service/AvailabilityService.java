@@ -362,12 +362,19 @@ public class AvailabilityService {
                 );
             }
 
+            if (!employee.isTeamActive()) {
+                throw new BusinessException(
+                        HttpStatus.BAD_REQUEST,
+                        "O profissional não está mais vinculado à equipe desta unidade."
+                );
+            }
+
             employees = List.of(employee);
 
         } else {
 
             employees = employeeRepository
-                    .findByStore_IdAndUser_ActiveTrueOrderByUser_NameAsc(
+                    .findByStore_IdAndTeamActiveTrueAndUser_ActiveTrueOrderByUser_NameAsc(
                             storeId
                     );
         }

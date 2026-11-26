@@ -19,6 +19,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.github.banhosup.model.entities.CustomerEntity;
+import com.github.banhosup.repository.CustomerRepository;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -27,6 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AppointmentManagementService {
 
+    private final CustomerRepository customerRepository;
     private final AppointmentsRepository appointmentsRepository;
     private final AppointmentsPetOfferingRepository itemsRepository;
     private final EmployeeRepository employeeRepository;
@@ -47,7 +51,7 @@ public class AppointmentManagementService {
 
         List<Appointments> appointments =
                 appointmentsRepository
-                        .findByEmployee_Store_IdOrderByDateTimeAppointmentAsc(
+                        .findByStore_IdOrderByDateTimeAppointmentAsc(
                                 storeId
                         );
 
@@ -85,9 +89,8 @@ public class AppointmentManagementService {
                         return true;
                     }
 
-                    return appointment.getEmployee().getStore() != null
-                            && appointment.getEmployee()
-                            .getStore().getId().equals(storeId);
+                    return appointment.getStore() != null
+                            && appointment.getStore().getId().equals(storeId);
                 })
                 .filter(appointment ->
                         correspondeFiltros(
@@ -113,7 +116,7 @@ public class AppointmentManagementService {
         EmployeeEntity employee = buscarFuncionarioAutenticado(authentication);
 
         Appointments appointment = appointmentsRepository
-                .findByIdAndEmployee_Store_Id(
+                .findByIdAndStore_Id(
                         appointmentId,
                         employee.getStore().getId()
                 )
@@ -151,6 +154,47 @@ public class AppointmentManagementService {
         return toResponse(appointmentsRepository.save(appointment));
     }
 
+    // CLIENTE: consulta somente os agendamentos associados aos seus pets.
+    @Transactional(readOnly = true)
+    public List<AppointmentManagementResponse> listarCliente(
+            Authentication authentication,
+            StatusAppointments status
+    ) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BusinessException(
+                    HttpStatus.UNAUTHORIZED,
+                    "É necessário estar autenticado."
+            );
+        }
+
+        CustomerEntity customer = customerRepository
+                .findByUser_Email(authentication.getName())
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.FORBIDDEN,
+                        "Perfil de cliente não encontrado."
+                ));
+
+        if (!customer.getUser().isActive()) {
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Esta conta está inativa."
+            );
+        }
+
+        List<Appointments> appointments =
+                appointmentsRepository
+                        .findAllByCustomerIdOrderByDateTimeAppointmentDesc(
+                                customer.getId()
+                        );
+
+        return appointments.stream()
+                .filter(appointment ->
+                        status == null || appointment.getStatus() == status
+                )
+                .map(this::toResponse)
+                .toList();
+    }
 
     private EmployeeEntity buscarFuncionarioAutenticado(
             Authentication authentication
@@ -163,7 +207,8 @@ public class AppointmentManagementService {
                         "Funcionário não encontrado."
                 ));
 
-        if (!employee.getUser().isActive()) {
+        if (!employee.getUser().isActive()
+                || !employee.isTeamActive()) {
             throw new BusinessException(
                     HttpStatus.FORBIDDEN,
                     "Usuário inativo."

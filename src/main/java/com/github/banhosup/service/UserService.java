@@ -19,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.github.banhosup.dto.CustomerProfileResponse;
+import com.github.banhosup.dto.CustomerProfileUpdateRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,8 +57,17 @@ public class UserService {
                 Role.CUSTOMER
         );
 
+        user.setSecondaryPhone(normalizeOptionalPhone(request.secondaryPhone()));
+
         UserEntity saved = userRepository.save(user);
-        customerRepository.save(new CustomerEntity(saved));
+
+        CustomerEntity customer = new CustomerEntity(saved);
+
+        customer.setGender(normalizeOptionalText(request.gender()));
+        customer.setDateOfBirth(request.dateOfBirth());
+
+        customerRepository.save(customer);
+
         return UserResponse.from(saved);
     }
     @Transactional
@@ -79,6 +90,13 @@ public class UserService {
                 .orElseThrow(() -> new BusinessException(
                         HttpStatus.NOT_FOUND, "Loja não encontrada."
                 ));
+
+        if (!store.isAtiva()) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "Não é possível cadastrar funcionários em uma unidade inativa."
+            );
+        }
 
         UserEntity user = new UserEntity(
                 request.name().trim(),
@@ -105,6 +123,75 @@ public class UserService {
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Usuário não encontrado."));
         return UserResponse.from(user);
+    }
+
+    @Transactional(readOnly = true)
+    public CustomerProfileResponse findMyCustomerProfile(String email) {
+
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuário não encontrado."
+                ));
+
+        if (user.getRole() != Role.CUSTOMER) {
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Esta operação é exclusiva para clientes."
+            );
+        }
+
+        CustomerEntity customer = customerRepository
+                .findByUser_Email(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Perfil do cliente não encontrado."
+                ));
+
+        return CustomerProfileResponse.from(user, customer);
+    }
+
+
+    @Transactional
+    public CustomerProfileResponse updateMyCustomerProfile(
+            String email,
+            CustomerProfileUpdateRequest request
+    ) {
+
+        UserEntity user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuário não encontrado."
+                ));
+
+        if (user.getRole() != Role.CUSTOMER || !user.isActive()) {
+            throw new BusinessException(
+                    HttpStatus.FORBIDDEN,
+                    "Esta operação não está disponível para esta conta."
+            );
+        }
+
+        CustomerEntity customer = customerRepository
+                .findByUser_Email(email)
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Perfil do cliente não encontrado."
+                ));
+
+        user.setName(request.name().trim());
+        user.setPhone(onlyDigits(request.phone()));
+        user.setSecondaryPhone(
+                normalizeOptionalPhone(request.secondaryPhone())
+        );
+
+        customer.setGender(normalizeOptionalText(request.gender()));
+        customer.setDateOfBirth(request.dateOfBirth());
+        customer.setAddress(normalizeOptionalText(request.address()));
+
+        userRepository.save(user);
+        customerRepository.save(customer);
+
+        return CustomerProfileResponse.from(user, customer);
     }
 
     public List<UserResponse> findAll() {
@@ -138,6 +225,24 @@ public class UserService {
 
     private String onlyDigits(String value) {
         return value.replaceAll("\\D", "");
+    }
+
+    private String normalizeOptionalPhone(String value) {
+
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return onlyDigits(value);
+    }
+
+    private String normalizeOptionalText(String value) {
+
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value.trim();
     }
 }
 

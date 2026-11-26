@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import com.github.banhosup.dto.CustomerProfileResponse;
+import com.github.banhosup.dto.CustomerProfileUpdateRequest;
 
 import java.util.List;
 
@@ -38,6 +40,24 @@ public class UserController {
     @GetMapping
     public List<UserResponse> findAll() {
         return userService.findAll();
+    }
+
+    @GetMapping("/me/profile")
+    public CustomerProfileResponse myProfile(
+            Authentication authentication
+    ) {
+        return userService.findMyCustomerProfile(authentication.getName());
+    }
+
+    @PutMapping("/me/profile")
+    public CustomerProfileResponse updateMyProfile(
+            @RequestBody @Valid CustomerProfileUpdateRequest request,
+            Authentication authentication
+    ) {
+        return userService.updateMyCustomerProfile(
+                authentication.getName(),
+                request
+        );
     }
 
     @PutMapping("/{id}")

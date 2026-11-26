@@ -2,7 +2,6 @@ package com.github.banhosup.dto;
 
 import com.github.banhosup.model.enums.Porte;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 
@@ -30,7 +29,6 @@ public record PetDto(
         @Size(max = 500, message = "As observações devem ter no máximo 500 caracteres")
         String observacoes,
 
-        @NotNull(message = "O dono é obrigatório")
         Long donoId
 ) {
 }

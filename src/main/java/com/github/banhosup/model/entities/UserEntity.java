@@ -36,6 +36,10 @@ public class UserEntity {
     private String phone;
 
     @Setter
+    @Column(name = "secondary_phone", length = 20)
+    private String secondaryPhone;
+
+    @Setter
     @Column(nullable = false, unique = true, length = 11)
     private String cpf;
 

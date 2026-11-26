@@ -35,7 +35,12 @@ public class EmployeeTeamService {
         return employeeRepository
                 .findByStore_IdAndUser_ActiveTrueOrderByUser_NameAsc(storeId)
                 .stream()
-                .map(this::toResponse)
+                .filter(EmployeeEntity::isTeamActive)
+                .filter(employee ->
+                        employee.getUser().getRole() ==
+                                com.github.banhosup.model.enums.Role.EMPLOYEE
+                )
+                .map(EmployeeTeamResponse::from)
                 .toList();
     }
 
@@ -45,11 +50,31 @@ public class EmployeeTeamService {
             Authentication authentication
     ) {
 
-        buscarFuncionarioAutenticado(authentication);
+        EmployeeEntity responsavel =
+                buscarFuncionarioAutenticado(authentication);
 
-        return employeeRepository
-                .findByStoreIsNullAndUser_ActiveTrueOrderByUser_NameAsc()
+        Long storeId = responsavel.getStore().getId();
+
+        List<EmployeeEntity> disponiveis = new java.util.ArrayList<>();
+
+// Funcionários que ainda não possuem unidade.
+        disponiveis.addAll(
+                employeeRepository
+                        .findByStoreIsNullAndUser_ActiveTrueOrderByUser_NameAsc()
+        );
+
+// Funcionários anteriormente desvinculados desta mesma unidade.
+        employeeRepository.findByStore_Id(storeId)
                 .stream()
+                .filter(employee -> !employee.isTeamActive())
+                .filter(employee -> employee.getUser().isActive())
+                .forEach(disponiveis::add);
+
+        return disponiveis.stream()
+                .filter(employee ->
+                        employee.getUser().getRole() ==
+                                com.github.banhosup.model.enums.Role.EMPLOYEE
+                )
                 .map(this::toResponse)
                 .toList();
     }
@@ -73,6 +98,15 @@ public class EmployeeTeamService {
             );
         }
 
+        if (funcionario.getUser().getRole() !=
+                com.github.banhosup.model.enums.Role.EMPLOYEE) {
+
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "O usuário informado não é funcionário."
+            );
+        }
+
         if (!funcionario.getUser().isActive()) {
             throw new BusinessException(
                     HttpStatus.BAD_REQUEST,
@@ -80,14 +114,29 @@ public class EmployeeTeamService {
             );
         }
 
-        if (funcionario.getStore() != null) {
+        Long storeId = responsavel.getStore().getId();
+
+        if (funcionario.getStore() != null &&
+                !funcionario.getStore().getId().equals(storeId)) {
+
             throw new BusinessException(
                     HttpStatus.CONFLICT,
-                    "O funcionário já está vinculado a uma unidade."
+                    "O funcionário já pertence a outra unidade."
             );
         }
 
+        if (funcionario.getStore() != null &&
+                funcionario.isTeamActive()) {
+
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
+                    "O funcionário já está na equipe."
+            );
+        }
+
+// Vincula ou reativa o vínculo da mesma unidade.
         funcionario.setStore(responsavel.getStore());
+        funcionario.setTeamActive(true);
 
         return toResponse(employeeRepository.save(funcionario));
     }
@@ -144,7 +193,8 @@ public class EmployeeTeamService {
             );
         }
 
-        funcionario.setStore(null);
+// Desativa o vínculo, mas preserva a unidade histórica.
+        funcionario.setTeamActive(false);
 
         employeeRepository.save(funcionario);
     }
@@ -160,10 +210,12 @@ public class EmployeeTeamService {
                         "Registro de funcionário não encontrado."
                 ));
 
-        if (!employee.getUser().isActive()) {
+        if (!employee.getUser().isActive() ||
+                !employee.isTeamActive()) {
+
             throw new BusinessException(
                     HttpStatus.FORBIDDEN,
-                    "Usuário inativo."
+                    "Funcionário inativo na equipe."
             );
         }
 
@@ -191,30 +243,28 @@ public class EmployeeTeamService {
             Long storeId
     ) {
 
-        return employeeRepository
+        EmployeeEntity employee = employeeRepository
                 .findByIdAndStore_Id(employeeId, storeId)
                 .orElseThrow(() -> new BusinessException(
                         HttpStatus.NOT_FOUND,
                         "Funcionário não encontrado na sua unidade."
                 ));
+
+        if (!employee.isTeamActive() ||
+                !employee.getUser().isActive() ||
+                employee.getUser().getRole() !=
+                        com.github.banhosup.model.enums.Role.EMPLOYEE) {
+
+            throw new BusinessException(
+                    HttpStatus.NOT_FOUND,
+                    "Funcionário não está ativo na equipe."
+            );
+        }
+
+        return employee;
     }
 
     private EmployeeTeamResponse toResponse(EmployeeEntity employee) {
-
-        return new EmployeeTeamResponse(
-                employee.getId(),
-                employee.getUser().getName(),
-                employee.getUser().getEmail(),
-                employee.getUser().getPhone(),
-                employee.getRegistry(),
-                employee.getPosition(),
-                employee.getStore() != null
-                        ? employee.getStore().getId()
-                        : null,
-                employee.getStore() != null
-                        ? employee.getStore().getNome()
-                        : null,
-                employee.getUser().isActive()
-        );
+            return EmployeeTeamResponse.from(employee);
+        }
     }
-}

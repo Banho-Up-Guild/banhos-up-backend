@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
@@ -25,31 +26,49 @@ public class PetController {
 
     private final PetService service;
 
-    // GET /pets          -> todos
-    // GET /pets?donoId=1 -> pets de um dono
+    // GET /pets -> pets do cliente autenticado
+// O parâmetro donoId permanece por compatibilidade,
+// mas não será utilizado para definir o proprietário.
     @GetMapping
-    public List<PetDto> listar(@RequestParam(required = false) Long donoId) {
-        return service.listar(donoId);
+    public List<PetDto> listar(
+            @RequestParam(required = false) Long donoId,
+            Authentication authentication
+    ) {
+        return service.listar(authentication.getName());
     }
 
     @GetMapping("/{id}")
-    public PetDto buscarPorId(@PathVariable Long id) {
-        return service.buscarPorId(id);
+    public PetDto buscarPorId(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        return service.buscarPorId(id, authentication.getName());
     }
 
     @PostMapping
-    public ResponseEntity<PetDto> criar(@Valid @RequestBody PetDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.criar(dto));
+    public ResponseEntity<PetDto> criar(
+            @Valid @RequestBody PetDto dto,
+            Authentication authentication
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(service.criar(dto, authentication.getName()));
     }
 
     @PutMapping("/{id}")
-    public PetDto atualizar(@PathVariable Long id, @Valid @RequestBody PetDto dto) {
-        return service.atualizar(id, dto);
+    public PetDto atualizar(
+            @PathVariable Long id,
+            @Valid @RequestBody PetDto dto,
+            Authentication authentication
+    ) {
+        return service.atualizar(id, dto, authentication.getName());
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        service.deletar(id);
+    public ResponseEntity<Void> deletar(
+            @PathVariable Long id,
+            Authentication authentication
+    ) {
+        service.deletar(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 }
