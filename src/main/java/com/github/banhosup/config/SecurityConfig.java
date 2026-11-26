@@ -149,7 +149,7 @@ public class SecurityConfig {
                                 )
                         )
 
-                        // AGENDAMENTO PÚBLICO DOS CLIENTES
+                        // AGENDAMENTO DOS CLIENTES
                         .requestMatchers(HttpMethod.POST, "/appointments")
                         .hasRole("CUSTOMER")
 
@@ -174,8 +174,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/users/store_employee")
                         .permitAll()
 
+                        // O calendário pode ser consultado publicamente, mas a recomendação
+                        // do profissional é restrita a clientes autenticados.
                         .requestMatchers(HttpMethod.GET, "/availability/calendar")
                         .permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/availability/employee")
+                        .hasRole("CUSTOMER")
 
                         // DOCUMENTAÇÃO DA API.
                         .requestMatchers(

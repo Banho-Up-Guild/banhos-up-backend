@@ -13,25 +13,28 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import java.time.LocalDateTime;
-
 @Repository
 public interface AppointmentsRepository extends JpaRepository<Appointments, Long> {
+
     List<Appointments> findByDateTimeAppointmentBetweenAndStatusNot(
             LocalDateTime start,
             LocalDateTime end,
             StatusAppointments status
     );
 
-    List<Appointments>
-    findByEmployee_Store_IdOrderByDateTimeAppointmentAsc(Long storeId);
+    List<Appointments> findByEmployee_Store_IdOrderByDateTimeAppointmentAsc(
+            Long storeId
+    );
 
     Optional<Appointments> findByIdAndEmployee_Store_Id(
             Long appointmentId,
             Long storeId
     );
 
-    boolean existsByDateTimeAppointmentAndStatusNot(LocalDateTime appointment, StatusAppointments status);
+    boolean existsByDateTimeAppointmentAndStatusNot(
+            LocalDateTime appointment,
+            StatusAppointments status
+    );
 
     List<Appointments> findByEmployee_IdInAndDateTimeAppointmentBetweenAndStatusNot(
             List<Long> employeeIds,
@@ -40,14 +43,20 @@ public interface AppointmentsRepository extends JpaRepository<Appointments, Long
             StatusAppointments status
     );
 
+    List<Appointments> findByEmployee_IdInAndDateTimeAppointmentAfterAndStatusNot(
+            List<Long> employeeIds,
+            LocalDateTime after,
+            StatusAppointments status
+    );
+
     @Query("""
-    SELECT DISTINCT a
-    FROM Appointments a
-    JOIN AppointmentsPetOffering item ON item.appointments = a
-    JOIN item.pet pet
-    WHERE pet.dono.id = :customerId
-    ORDER BY a.dateTimeAppointment DESC
-""")
+        SELECT DISTINCT a
+        FROM Appointments a
+        JOIN AppointmentsPetOffering item ON item.appointments = a
+        JOIN item.pet pet
+        WHERE pet.dono.id = :customerId
+        ORDER BY a.dateTimeAppointment DESC
+    """)
     List<Appointments> findAllByCustomerIdOrderByDateTimeAppointmentDesc(
             @Param("customerId") Long customerId
     );

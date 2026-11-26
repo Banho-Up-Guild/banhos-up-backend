@@ -7,9 +7,16 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface AppointmentsPetOfferingRepository extends JpaRepository<AppointmentsPetOffering,Long> {
+public interface AppointmentsPetOfferingRepository
+        extends JpaRepository<AppointmentsPetOffering, Long> {
+
     List<AppointmentsPetOffering> findByAppointments_Id(
             Long appointmentId
     );
+
+    List<AppointmentsPetOffering> findByAppointments_IdIn(
+            List<Long> appointmentIds
+    );
+
     boolean existsByPet_Id(Long petId);
 }

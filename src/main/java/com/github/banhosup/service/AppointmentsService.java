@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Locale;
 
 @Service
 public class AppointmentsService {
@@ -49,7 +50,15 @@ public class AppointmentsService {
     private final AppointmentsPetOfferingRepository appointmentsPetOfferingRepository;
     private final EmployeeRepository employeeRepository;
 
-    public AppointmentsService(AppointmentsRepository appointmentsRepository, PetRepository petRepository, OfferingRepository offeringRepository, AppointmentsPetOfferingRepository appointmentsPetOfferingRepository, EmployeeRepository employeeRepository, CustomerRepository customerRepository, AvailabilityService availabilityService) {
+    public AppointmentsService(
+            AppointmentsRepository appointmentsRepository,
+            PetRepository petRepository,
+            OfferingRepository offeringRepository,
+            AppointmentsPetOfferingRepository appointmentsPetOfferingRepository,
+            EmployeeRepository employeeRepository,
+            CustomerRepository customerRepository,
+            AvailabilityService availabilityService
+    ) {
         this.appointmentsRepository = appointmentsRepository;
         this.petRepository = petRepository;
         this.offeringRepository = offeringRepository;
@@ -58,7 +67,6 @@ public class AppointmentsService {
         this.customerRepository = customerRepository;
         this.availabilityService = availabilityService;
     }
-
 
     // Post de agendamento
     @Transactional
@@ -156,6 +164,7 @@ public class AppointmentsService {
             }
 
             int duracaoPet = 0;
+            boolean possuiServicoDeBanho = false;
 
             Set<Long> servicosUtilizados = new HashSet<>();
 
@@ -188,12 +197,27 @@ public class AppointmentsService {
                     );
                 }
 
+                // O Backend usa o preço vigente no banco.
                 totalPrice = totalPrice.add(offering.getPreco());
+
+                String nomeServico = offering.getNome();
+
+                if (nomeServico != null
+                        && nomeServico.toLowerCase(Locale.ROOT).contains("banho")) {
+                    possuiServicoDeBanho = true;
+                }
 
                 duracaoPet += offering.getDuracaoMinutos();
 
                 associations.add(
                         new AppointmentsPetOffering(null, pet, offering)
+                );
+            }
+
+            if (!possuiServicoDeBanho) {
+                throw new BusinessException(
+                        HttpStatus.BAD_REQUEST,
+                        "O serviço de banho é obrigatório para cada pet."
                 );
             }
 
@@ -263,27 +287,46 @@ public class AppointmentsService {
 
         return appointment;
     }
+
     // Get de agendamentos
     public List<Appointments> Alllist() {
         return appointmentsRepository.findAll();
     }
 
     // Get de agendamentos do mês (calendário)
-    public List<AppointmentsResponseCalendaryDTO> appointmentsCalendaryList(AppointmentsRequestCalendaryDTO dto) {
-        LocalDateTime start = dto.yearMonth().equals(YearMonth.now()) ? LocalDateTime.now() : dto.yearMonth().atDay(1).atStartOfDay();
+    public List<AppointmentsResponseCalendaryDTO> appointmentsCalendaryList(
+            AppointmentsRequestCalendaryDTO dto
+    ) {
+
+        LocalDateTime start = dto.yearMonth().equals(YearMonth.now())
+                ? LocalDateTime.now()
+                : dto.yearMonth().atDay(1).atStartOfDay();
+
         LocalDateTime end = dto.yearMonth().atEndOfMonth().atTime(LocalTime.MAX);
-        List<Appointments> appointments = appointmentsRepository.findByDateTimeAppointmentBetweenAndStatusNot(start, end, StatusAppointments.CANCELED);
+
+        List<Appointments> appointments =
+                appointmentsRepository.findByDateTimeAppointmentBetweenAndStatusNot(
+                        start,
+                        end,
+                        StatusAppointments.CANCELED
+                );
+
         return appointments.stream()
                 .collect(Collectors.groupingBy(
                         app -> app.getDateTimeAppointment().toLocalDate(),
-                        TreeMap::new, // Keeps dates sorted in chronological order
+                        TreeMap::new,
                         Collectors.mapping(
-                                app -> app.getDateTimeAppointment().toLocalTime().truncatedTo(ChronoUnit.MINUTES),
+                                app -> app.getDateTimeAppointment()
+                                        .toLocalTime()
+                                        .truncatedTo(ChronoUnit.MINUTES),
                                 Collectors.toList()
                         )
                 ))
                 .entrySet().stream()
-                .map(entry -> new AppointmentsResponseCalendaryDTO(entry.getKey(), entry.getValue()))
+                .map(entry -> new AppointmentsResponseCalendaryDTO(
+                        entry.getKey(),
+                        entry.getValue()
+                ))
                 .toList();
     }
 }
