@@ -18,7 +18,7 @@ public class EmployeeDashboardController {
     private final DashboardService dashboardService;
 
     @GetMapping
-    @PreAuthorize("@employeePermissionService.hasPermission(authentication, 'APPOINTMENTS_VIEW')")
+    @PreAuthorize("hasAnyRole('EMPLOYEE', 'ADMIN')")
     public ResponseEntity<DashboardResponse> resumo(
             Authentication authentication
     ) {

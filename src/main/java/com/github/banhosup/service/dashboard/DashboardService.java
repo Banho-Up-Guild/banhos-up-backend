@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -104,9 +105,7 @@ public class DashboardService {
 
         List<Appointments> appointments =
                 appointmentsRepository
-                        .findByEmployee_Store_IdOrderByDateTimeAppointmentAsc(
-                                storeId
-                        );
+                        .findByStore_IdOrderByDateTimeAppointmentAsc(storeId);
 
         long membrosEquipe = employeeRepository
                 .findByStore_IdAndTeamActiveTrueAndUser_ActiveTrueOrderByUser_NameAsc(
@@ -123,7 +122,7 @@ public class DashboardService {
             long membrosEquipe
     ) {
 
-        LocalDate hoje = LocalDate.now();
+        LocalDate hoje = LocalDate.now(ZoneId.of("America/Sao_Paulo"));
 
         // Agendamentos de hoje, exceto os cancelados.
         long agendamentosHoje = appointments.stream()

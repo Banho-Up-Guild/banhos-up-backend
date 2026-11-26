@@ -3,15 +3,19 @@ package com.github.banhosup.service.admin;
 import com.github.banhosup.common.exceptions.BusinessException;
 import com.github.banhosup.dto.employee.EmployeeTeamPositionRequest;
 import com.github.banhosup.dto.employee.EmployeeTeamResponse;
+import com.github.banhosup.dto.employee.EmployeeCreateRequest;
 import com.github.banhosup.model.entities.employee.EmployeeEntity;
 import com.github.banhosup.model.entities.store.StoreEntity;
+import com.github.banhosup.model.entities.user.UserEntity;
 import com.github.banhosup.model.enums.Role;
 import com.github.banhosup.repository.employee.EmployeeRepository;
 import com.github.banhosup.repository.store.StoreRepository;
+import com.github.banhosup.repository.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,73 @@ public class AdminTeamService {
     private final AppointmentsRepository appointmentsRepository;
     private final EmployeeRepository employeeRepository;
     private final StoreRepository storeRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+
+    // ADMIN: criar uma conta de funcionário e vinculá-la diretamente à unidade.
+    @Transactional
+    public EmployeeTeamResponse criarFuncionario(
+            Long storeId,
+            EmployeeCreateRequest request
+    ) {
+        StoreEntity store = buscarUnidade(storeId);
+
+        if (!store.isAtiva()) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "Não é possível cadastrar funcionários em uma unidade inativa."
+            );
+        }
+
+        String email = request.email().trim().toLowerCase();
+        String cpf = request.cpf().replaceAll("\\D", "");
+        String phone = request.phone().replaceAll("\\D", "");
+        String registry = request.registry().trim();
+
+        if (userRepository.existsByEmail(email)) {
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
+                    "E-mail já cadastrado."
+            );
+        }
+
+        if (userRepository.existsByCpf(cpf)) {
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
+                    "CPF já cadastrado."
+            );
+        }
+
+        if (employeeRepository.existsByRegistry(registry)) {
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
+                    "Matrícula já cadastrada."
+            );
+        }
+
+        UserEntity user = new UserEntity(
+                request.name().trim(),
+                email,
+                passwordEncoder.encode(request.password()),
+                phone,
+                cpf,
+                Role.EMPLOYEE
+        );
+
+        user = userRepository.save(user);
+
+        EmployeeEntity employee = new EmployeeEntity();
+        employee.setUser(user);
+        employee.setRegistry(registry);
+        employee.setPosition(request.position().trim());
+        employee.setStore(store);
+        employee.setTeamActive(true);
+
+        return EmployeeTeamResponse.from(
+                employeeRepository.save(employee)
+        );
+    }
 
 
     // ADMIN: listar funcionários ativos de uma unidade.

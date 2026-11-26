@@ -2,6 +2,7 @@ package com.github.banhosup.controller.admin;
 
 import com.github.banhosup.dto.employee.EmployeeTeamPositionRequest;
 import com.github.banhosup.dto.employee.EmployeeTeamResponse;
+import com.github.banhosup.dto.employee.EmployeeCreateRequest;
 import com.github.banhosup.service.admin.AdminTeamService;
 
 import jakarta.validation.Valid;
@@ -22,6 +23,16 @@ import java.util.List;
 public class AdminTeamController {
 
     private final AdminTeamService teamService;
+
+
+    @PostMapping("/novo")
+    public ResponseEntity<EmployeeTeamResponse> criarFuncionario(
+            @PathVariable Long storeId,
+            @RequestBody @Valid EmployeeCreateRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(teamService.criarFuncionario(storeId, request));
+    }
 
 
     @GetMapping
