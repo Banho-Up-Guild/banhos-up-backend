@@ -1,7 +1,7 @@
 package com.github.banhosup.model.entities.appointments;
 
-import com.github.banhosup.model.entities.Offering;
-import com.github.banhosup.model.entities.Pet;
+import com.github.banhosup.model.entities.offering.Offering;
+import com.github.banhosup.model.entities.pet.Pet;
 import jakarta.persistence.*;
 
 @Entity

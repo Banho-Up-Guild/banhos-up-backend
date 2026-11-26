@@ -1,7 +1,7 @@
 package com.github.banhosup.config;
 
 import com.github.banhosup.security.JwtFilter;
-import com.github.banhosup.service.EmployeePermissionService;
+import com.github.banhosup.service.employee.EmployeePermissionService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Bean;

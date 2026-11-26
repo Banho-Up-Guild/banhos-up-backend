@@ -1,6 +1,6 @@
 package com.github.banhosup.security;
 
-import com.github.banhosup.model.entities.UserEntity;
+import com.github.banhosup.model.entities.user.UserEntity;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;

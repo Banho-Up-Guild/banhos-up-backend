@@ -1,7 +1,7 @@
 package com.github.banhosup.model.entities.appointments;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.github.banhosup.model.entities.EmployeeEntity;
+import com.github.banhosup.model.entities.employee.EmployeeEntity;
 import com.github.banhosup.model.enums.StatusAppointments;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
-import com.github.banhosup.model.entities.StoreEntity;
+import com.github.banhosup.model.entities.store.StoreEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
