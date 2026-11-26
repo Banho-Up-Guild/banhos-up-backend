@@ -8,7 +8,9 @@ public record AvailabilityCalendarDayResponse(
 
         LocalDate date,
 
-        List<LocalTime> hours
+        List<LocalTime> hours,
+
+        List<LocalTime> unavailableHours
 
 ) {
 }

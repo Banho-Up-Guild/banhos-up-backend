@@ -2,6 +2,7 @@ package com.github.banhosup.service;
 
 import com.github.banhosup.common.exceptions.BusinessException;
 import com.github.banhosup.dto.availability.AvailabilityCalendarDayResponse;
+import com.github.banhosup.dto.availability.AvailableEmployeeResponse;
 import com.github.banhosup.dto.availability.StoreAvailabilityDayRequest;
 import com.github.banhosup.dto.availability.StoreAvailabilityDayResponse;
 import com.github.banhosup.dto.availability.StoreAvailabilityRequest;
@@ -9,12 +10,10 @@ import com.github.banhosup.model.entities.EmployeeEntity;
 import com.github.banhosup.model.entities.StoreBusinessHoursEntity;
 import com.github.banhosup.model.entities.StoreEntity;
 import com.github.banhosup.model.entities.appointments.Appointments;
-import com.github.banhosup.model.entities.appointments.AppointmentsPetOffering;
 import com.github.banhosup.model.enums.StatusAppointments;
 import com.github.banhosup.repository.EmployeeRepository;
 import com.github.banhosup.repository.StoreBusinessHoursRepository;
 import com.github.banhosup.repository.StoreRepository;
-import com.github.banhosup.repository.appointment.AppointmentsPetOfferingRepository;
 import com.github.banhosup.repository.appointment.AppointmentsRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -33,12 +32,13 @@ import java.time.YearMonth;
 import java.time.format.TextStyle;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -52,7 +52,6 @@ public class AvailabilityService {
     private final StoreRepository storeRepository;
     private final EmployeeRepository employeeRepository;
     private final AppointmentsRepository appointmentsRepository;
-    private final AppointmentsPetOfferingRepository itemsRepository;
 
 
     // ADMIN: consulta os horários de qualquer unidade.
@@ -309,7 +308,7 @@ public class AvailabilityService {
     }
 
 
-    // CALENDÁRIO PÚBLICO: retorna somente horários disponíveis.
+    // CALENDÁRIO PÚBLICO: separa horários livres dos totalmente ocupados.
     @Transactional(readOnly = true)
     public List<AvailabilityCalendarDayResponse> consultarCalendario(
             Long storeId,
@@ -346,7 +345,14 @@ public class AvailabilityService {
 
         List<EmployeeEntity> employees;
 
-        if (employeeId != null) {
+        if (employeeId != null && employeeId < 0) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "O identificador do profissional não pode ser negativo."
+            );
+        }
+
+        if (employeeId != null && employeeId > 0) {
 
             EmployeeEntity employee = employeeRepository
                     .findByIdAndStore_Id(employeeId, storeId)
@@ -407,29 +413,23 @@ public class AvailabilityService {
                                 StatusAppointments.CANCELED
                         );
 
-        Map<Long, List<BusyPeriod>> busyByEmployee =
+        Map<Long, Set<LocalDateTime>> bookedSlotsByEmployee =
                 new HashMap<>();
 
         for (Appointments appointment : appointments) {
 
-            int appointmentDuration =
-                    calcularDuracaoAgendamento(appointment.getId());
-
             LocalDateTime start =
                     appointment.getDateTimeAppointment();
-
-            LocalDateTime end =
-                    start.plusMinutes(appointmentDuration);
 
             Long appointmentEmployeeId =
                     appointment.getEmployee().getId();
 
-            busyByEmployee
+            bookedSlotsByEmployee
                     .computeIfAbsent(
                             appointmentEmployeeId,
-                            key -> new ArrayList<>()
+                            key -> new HashSet<>()
                     )
-                    .add(new BusyPeriod(start, end));
+                    .add(start);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -449,6 +449,7 @@ public class AvailabilityService {
             }
 
             List<LocalTime> availableHours = new ArrayList<>();
+            List<LocalTime> unavailableHours = new ArrayList<>();
 
             LocalTime slot = daySchedule.getOpeningTime();
 
@@ -474,33 +475,31 @@ public class AvailabilityService {
                     boolean availableForSomeone =
                             employees.stream().anyMatch(employee -> {
 
-                                List<BusyPeriod> busy =
-                                        busyByEmployee.getOrDefault(
+                                Set<LocalDateTime> bookedSlots =
+                                        bookedSlotsByEmployee.getOrDefault(
                                                 employee.getId(),
-                                                List.of()
+                                                Set.of()
                                         );
 
-                                return busy.stream().noneMatch(period ->
-                                        slotStartDateTime.isBefore(period.end())
-                                                && slotStartDateTime
-                                                .plusMinutes(durationMinutes)
-                                                .isAfter(period.start())
-                                );
+                                return !bookedSlots.contains(slotStartDateTime);
                             });
 
                     if (availableForSomeone) {
                         availableHours.add(slot);
+                    } else {
+                        unavailableHours.add(slot);
                     }
                 }
 
                 slot = slot.plusMinutes(INTERVAL_MINUTES);
             }
 
-            if (!availableHours.isEmpty()) {
+            if (!availableHours.isEmpty() || !unavailableHours.isEmpty()) {
 
                 result.add(new AvailabilityCalendarDayResponse(
                         date,
-                        availableHours
+                        availableHours,
+                        unavailableHours
                 ));
             }
         }
@@ -509,39 +508,160 @@ public class AvailabilityService {
     }
 
 
-    private int calcularDuracaoAgendamento(Long appointmentId) {
+    @Transactional(readOnly = true)
+    public AvailableEmployeeResponse selecionarFuncionario(
+            Long storeId,
+            Long employeeId,
+            LocalDateTime dateTime,
+            Integer durationMinutes
+    ) {
 
-        List<AppointmentsPetOffering> items =
-                itemsRepository.findByAppointments_Id(appointmentId);
+        StoreEntity store = buscarUnidade(storeId);
 
-        Map<Long, Integer> durationByPet = new HashMap<>();
-
-        for (AppointmentsPetOffering item : items) {
-
-            Long petId = item.getPet().getId();
-
-            Integer duration =
-                    item.getOffering().getDuracaoMinutos();
-
-            if (duration != null) {
-                durationByPet.merge(
-                        petId,
-                        duration,
-                        Integer::sum
-                );
-            }
+        if (!store.isAtiva()) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "A unidade está inativa."
+            );
         }
 
-        // Segue a lógica atual do Frontend:
-        // pets são tratados em paralelo e vale a maior duração.
-        return Math.max(
-                INTERVAL_MINUTES,
-                durationByPet.values()
-                        .stream()
-                        .mapToInt(Integer::intValue)
-                        .max()
-                        .orElse(INTERVAL_MINUTES)
+        if (dateTime == null || !dateTime.isAfter(LocalDateTime.now())) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "A data e a hora devem ser futuras."
+            );
+        }
+
+        validarDuracao(durationMinutes);
+
+        if (employeeId != null && employeeId < 0) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "O identificador do profissional não pode ser negativo."
+            );
+        }
+
+        List<EmployeeEntity> employees;
+        if (employeeId != null && employeeId > 0) {
+            EmployeeEntity employee = employeeRepository
+                    .findByIdAndStore_Id(employeeId, storeId)
+                    .orElseThrow(() -> new BusinessException(
+                            HttpStatus.NOT_FOUND,
+                            "Profissional não encontrado nesta unidade."
+                    ));
+
+            if (!employee.getUser().isActive()) {
+                throw new BusinessException(
+                        HttpStatus.BAD_REQUEST,
+                        "O profissional está inativo."
+                );
+            }
+
+            employees = List.of(employee);
+        } else {
+            employees = employeeRepository
+                    .findByStore_IdAndUser_ActiveTrueOrderByUser_NameAsc(storeId);
+        }
+
+        if (employees.isEmpty()) {
+            throw new BusinessException(
+                    HttpStatus.NOT_FOUND,
+                    "Não há profissionais ativos nesta unidade."
+            );
+        }
+
+        StoreBusinessHoursEntity schedule = hoursRepository
+                .findAllByStore_IdOrderByDayOfWeekAsc(storeId)
+                .stream()
+                .filter(day -> day.getDayOfWeek() == dateTime.getDayOfWeek().getValue())
+                .findFirst()
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "A unidade não possui horário de funcionamento para esse dia."
+                ));
+
+        LocalTime slot = dateTime.toLocalTime();
+        LocalTime slotEnd = slot.plusMinutes(durationMinutes);
+        boolean overlapsBreak = schedule.getBreakStart() != null
+                && slot.isBefore(schedule.getBreakEnd())
+                && slotEnd.isAfter(schedule.getBreakStart());
+
+        if (schedule.isClosed()
+                || slot.isBefore(schedule.getOpeningTime())
+                || slotEnd.isAfter(schedule.getClosingTime())
+                || overlapsBreak) {
+            throw new BusinessException(
+                    HttpStatus.NOT_FOUND,
+                    "Não há profissional disponível nesse horário."
+            );
+        }
+
+        List<Long> employeeIds = employees.stream()
+                .map(EmployeeEntity::getId)
+                .toList();
+        LocalDateTime dayStart = dateTime.toLocalDate().atStartOfDay();
+        LocalDateTime dayEnd = dateTime.toLocalDate().atTime(LocalTime.MAX);
+        List<Appointments> appointmentsForDay = appointmentsRepository
+                .findByEmployee_IdInAndDateTimeAppointmentBetweenAndStatusNot(
+                        employeeIds,
+                        dayStart,
+                        dayEnd,
+                        StatusAppointments.CANCELED
+                );
+        List<Appointments> futureAppointments = appointmentsRepository
+                .findByEmployee_IdInAndDateTimeAppointmentAfterAndStatusNot(
+                        employeeIds,
+                        LocalDateTime.now(),
+                        StatusAppointments.CANCELED
+                );
+
+        Map<Long, Long> appointmentCountByEmployee = new HashMap<>();
+        employees.forEach(employee -> appointmentCountByEmployee.put(employee.getId(), 0L));
+
+        for (Appointments appointment : futureAppointments) {
+            appointmentCountByEmployee.merge(
+                    appointment.getEmployee().getId(),
+                    1L,
+                    Long::sum
+            );
+        }
+
+        Map<Long, Set<LocalDateTime>> bookedSlotsByEmployee = new HashMap<>();
+        for (Appointments appointment : appointmentsForDay) {
+            Long appointmentEmployeeId = appointment.getEmployee().getId();
+            LocalDateTime appointmentStart = appointment.getDateTimeAppointment();
+
+            bookedSlotsByEmployee.computeIfAbsent(appointmentEmployeeId, key -> new HashSet<>())
+                    .add(appointmentStart);
+        }
+
+        EmployeeEntity selectedEmployee = employees.stream()
+                .filter(employee -> !bookedSlotsByEmployee
+                        .getOrDefault(employee.getId(), Set.of())
+                        .contains(dateTime))
+                .min(Comparator
+                        .comparingLong((EmployeeEntity employee) ->
+                                appointmentCountByEmployee.get(employee.getId()))
+                        .thenComparing(employee -> employee.getUser().getName()))
+                .orElseThrow(() -> new BusinessException(
+                        HttpStatus.NOT_FOUND,
+                        "Não há profissional disponível nesse horário."
+                ));
+
+        return new AvailableEmployeeResponse(
+                selectedEmployee.getId(),
+                selectedEmployee.getUser().getName()
         );
+    }
+
+
+    private void validarDuracao(Integer durationMinutes) {
+        if (durationMinutes == null || durationMinutes < 1 || durationMinutes > 720) {
+            throw new BusinessException(
+                    HttpStatus.BAD_REQUEST,
+                    "A duração deve estar entre 1 e 720 minutos."
+            );
+        }
     }
 
 
@@ -581,12 +701,5 @@ public class AvailabilityService {
                         HttpStatus.NOT_FOUND,
                         "Unidade não encontrada."
                 ));
-    }
-
-
-    private record BusyPeriod(
-            LocalDateTime start,
-            LocalDateTime end
-    ) {
     }
 }

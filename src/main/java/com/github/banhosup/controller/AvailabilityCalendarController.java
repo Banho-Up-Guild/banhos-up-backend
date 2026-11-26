@@ -1,6 +1,7 @@
 package com.github.banhosup.controller;
 
 import com.github.banhosup.dto.availability.AvailabilityCalendarDayResponse;
+import com.github.banhosup.dto.availability.AvailableEmployeeResponse;
 import com.github.banhosup.service.AvailabilityService;
 
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
 
@@ -37,6 +39,29 @@ public class AvailabilityCalendarController {
                         storeId,
                         employeeId,
                         yearMonth,
+                        durationMinutes
+                )
+        );
+    }
+
+    @GetMapping("/employee")
+    public ResponseEntity<AvailableEmployeeResponse> selecionarFuncionario(
+            @RequestParam Long storeId,
+
+            @RequestParam(required = false) Long employeeId,
+
+            @RequestParam
+            @DateTimeFormat(pattern = "dd-MM-yyyy HH:mm")
+            LocalDateTime dateTime,
+
+            @RequestParam(defaultValue = "30") Integer durationMinutes
+    ) {
+
+        return ResponseEntity.ok(
+                availabilityService.selecionarFuncionario(
+                        storeId,
+                        employeeId,
+                        dateTime,
                         durationMinutes
                 )
         );

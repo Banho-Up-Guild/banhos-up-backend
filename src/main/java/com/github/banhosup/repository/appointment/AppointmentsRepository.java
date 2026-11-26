@@ -25,12 +25,22 @@ public interface AppointmentsRepository extends JpaRepository<Appointments, Long
             Long storeId
     );
 
-    boolean existsByDateTimeAppointmentAndStatusNot(LocalDateTime appointment, StatusAppointments status);
+    boolean existsByEmployee_IdAndDateTimeAppointmentAndStatusNot(
+            Long employeeId,
+            LocalDateTime appointment,
+            StatusAppointments status
+    );
 
     List<Appointments> findByEmployee_IdInAndDateTimeAppointmentBetweenAndStatusNot(
             List<Long> employeeIds,
             LocalDateTime start,
             LocalDateTime end,
+            StatusAppointments status
+    );
+
+    List<Appointments> findByEmployee_IdInAndDateTimeAppointmentAfterAndStatusNot(
+            List<Long> employeeIds,
+            LocalDateTime start,
             StatusAppointments status
     );
 }

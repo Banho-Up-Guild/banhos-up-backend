@@ -48,8 +48,18 @@ public class AppointmentsService {
 
     // Post de agendamento
     public Appointments saveAppointment(AppointmentsRequestDTO dto) {
-        if(appointmentsRepository.existsByDateTimeAppointmentAndStatusNot(dto.dateTimeAppointment(), StatusAppointments.CANCELED)) {
-            throw new BusinessException(HttpStatus.CONFLICT, "Esse horário já foi agendado por outro usuário");
+        EmployeeEntity employee = employeeRepository.findById(dto.employeeId())
+                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
+
+        if (appointmentsRepository.existsByEmployee_IdAndDateTimeAppointmentAndStatusNot(
+                employee.getId(),
+                dto.dateTimeAppointment(),
+                StatusAppointments.CANCELED
+        )) {
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
+                    "Esse horário já foi agendado para esse funcionário."
+            );
         }
 
         BigDecimal totalPrice = new BigDecimal(0);
@@ -68,9 +78,6 @@ public class AppointmentsService {
             }
 
         }
-        EmployeeEntity employee = employeeRepository.findById(dto.employeeId())
-                .orElseThrow(() -> new BusinessException(HttpStatus.NOT_FOUND, "Funcionário não encontrado"));
-
         Appointments appointments = new Appointments(
                 dto.dateTimeAppointment(),
                 dto.status(),
